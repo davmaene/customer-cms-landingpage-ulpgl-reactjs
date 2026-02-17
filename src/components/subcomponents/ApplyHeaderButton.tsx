@@ -1,3 +1,6 @@
+import { routes } from "../../utils/utils.routes";
+import { NavItem } from "./NavItem";
+
 export const ApplyButton: React.FC<{ canBeShown?: boolean }> = ({ canBeShown }) => {
     if (!canBeShown) return null;
 
@@ -14,7 +17,7 @@ export const ApplyButton: React.FC<{ canBeShown?: boolean }> = ({ canBeShown }) 
                 </div>
             </div>
             <p style={{ marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0 }}>
-                <a href="/">Demander une admission</a>
+                <NavItem href={routes.ACTIVITIES} label={"Demander une admission"} />
             </p>
         </div>
     );
