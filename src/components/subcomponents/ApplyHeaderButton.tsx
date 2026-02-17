@@ -14,7 +14,7 @@ export const ApplyButton: React.FC<{ canBeShown?: boolean }> = ({ canBeShown }) 
                 </div>
             </div>
             <p style={{ marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0 }}>
-                <a href="index.html">Apply</a>
+                <a href="/">Demander une admission</a>
             </p>
         </div>
     );

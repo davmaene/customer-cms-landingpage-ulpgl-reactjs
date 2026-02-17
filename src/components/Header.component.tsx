@@ -16,7 +16,7 @@ export const Header: React.FC = () => {
         <div className="wp-block-group is-content-justification-space-between is-nowrap is-layout-flex wp-container-core-group-is-layout-cb46ffcb wp-block-group-is-layout-flex">
           <Logo />
           <MainNavigation />
-          <ApplyButton canBeShown={true} />
+          <ApplyButton canBeShown={false} />
         </div>
       </div>
     </header>

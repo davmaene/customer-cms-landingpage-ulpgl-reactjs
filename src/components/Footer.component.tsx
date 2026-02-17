@@ -45,28 +45,28 @@ export const Footer: React.FC = () => {
           <FooterColumn 
             title="Explore"
             links={[
-              { href: 'about/index.html', label: 'About' },
-              { href: 'academics/index.html', label: 'Academics' },
-              { href: 'blog-edublock-pro/index.html', label: 'Blog' },
-              { href: 'campus-2/index.html', label: 'Campus' },
-              { href: 'contact/index.html', label: 'Contact' },
-              { href: 'events-2/index.html', label: 'Events' },
-              { href: 'index.html', label: 'Homepage', current: true },
-              { href: 'privacy-policy/index.html', label: 'Privacy Policy' },
+              { href: '#', label: 'About' },
+              { href: '#', label: 'Academics' },
+              { href: '#', label: 'Blog' },
+              { href: '#', label: 'Campus' },
+              { href: '#', label: 'Contact' },
+              { href: '#', label: 'Events' },
+              { href: '#', label: 'Homepage', current: true },
+              { href: '#', label: 'Privacy Policy' },
             ]}
           />
           
           <FooterColumn 
             title="Resources"
             links={[
-              { href: 'about/index.html', label: 'About' },
-              { href: 'academics/index.html', label: 'Academics' },
-              { href: 'blog-edublock-pro/index.html', label: 'Blog' },
-              { href: 'campus-2/index.html', label: 'Campus' },
-              { href: 'contact/index.html', label: 'Contact' },
-              { href: 'events-2/index.html', label: 'Events' },
-              { href: 'index.html', label: 'Homepage', current: true },
-              { href: 'privacy-policy/index.html', label: 'Privacy Policy' },
+              { href: '#', label: 'About' },
+              { href: '#', label: 'Academics' },
+              { href: '#', label: 'Blog' },
+              { href: '#', label: 'Campus' },
+              { href: '#', label: 'Contact' },
+              { href: '#', label: 'Events' },
+              { href: '#', label: 'Homepage', current: true },
+              { href: '#', label: 'Privacy Policy' },
             ]}
           />
           
@@ -75,9 +75,9 @@ export const Footer: React.FC = () => {
               style={{marginBottom: 'var(--wp--preset--spacing--50)'}}>
               Newsletter
             </h3>
-            <p>Inscrivez-vous avec votre adresse e-mail pour recevoir nos actualités hebdomadaires</p>
+            <p>Inscrivez-vous avec votre adresse e-mail pour recevoir nos actualités hebdomadaires, et des notifications sur nos articles</p>
             
-            <form action="https://demo.wpzoom.com/action_page.php">
+            <form action="#">
               <input type="text" placeholder="Email address" name="mail" required />
               <input type="submit" value="Subscribe" />
             </form>

@@ -41,13 +41,13 @@ export const MainNavigation: React.FC = () => {
 
                             <ul style={{ fontStyle: 'normal', fontWeight: '500' }}
                                 className="wp-block-navigation__container is-responsive items-justified-left wp-block-navigation">
-                                <NavItem href="index.html" label="Home" current={true} />
-                                <NavItem href="academics/index.html" label="Academics" />
-                                <NavItem href="campus-2/index.html" label="Campus" />
-                                <NavItem href="about/index.html" label="About" />
-                                <NavItem href="events-2/index.html" label="Events" />
-                                <NavItem href="blog/index.html" label="News" />
-                                <NavItem href="contact/index.html" label="Contact" />
+                                <NavItem href="/" label="Accueil" current={true} />
+                                <NavItem href="/app/domaines" label="Facultés" />
+                                <NavItem href="/app/admission" label="Admission" />
+                                <NavItem href="/app/research" label="Recherche" />
+                                <NavItem href="/app/activities" label="Activités" />
+                                <NavItem href="/app/articles" label="Articles" />
+                                <NavItem href="/app/contancts" label="Nos Contacts" />
                             </ul>
                         </div>
                     </div>
