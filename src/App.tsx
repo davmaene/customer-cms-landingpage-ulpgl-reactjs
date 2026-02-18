@@ -11,7 +11,7 @@ import { SkipToContent } from "./components/subcomponents/Skipbutton";
 function App() {
   return (
     <Router>
-      <div data-rsssl="1" className="home wp-singular page-template page-template-no-title page page-id-11 wp-custom-logo wp-embed-responsive wp-theme-edublock-pro tribe-js" style={{ backgroundColor: "red", paddingTop: 0, marginTop: 0 }}>
+      <div data-rsssl="1" className="home wp-singular page-template page-template-no-title page page-id-11 wp-custom-logo wp-embed-responsive wp-theme-edublock-pro tribe-js">
         <SkipToContent />
         <div className="wp-site-blocks">
           <Header />

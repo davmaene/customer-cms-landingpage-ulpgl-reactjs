@@ -5,14 +5,22 @@ export const HeroSection: React.FC = () => {
         <main className="wp-block-group alignfull site-content is-style-default is-layout-flow wp-container-core-group-is-layout-2bb4a3bc wp-block-group-is-layout-flow"
             style={{ marginTop: 0, marginBottom: 0, paddingTop: 0, paddingRight: 0, paddingBottom: 0, paddingLeft: 0 }}>
 
-            <div className="wp-block-cover alignwide is-style-default"
-                style={{ borderRadius: '0px', paddingTop: 'var(--wp--preset--spacing--small)', paddingRight: '0px', paddingBottom: 'var(--wp--preset--spacing--small)', paddingLeft: '0px' }}>
+            <div
+                className="wp-block-cover alignwide is-style-default"
+                style={{ borderRadius: '0px', paddingTop: 'var(--wp--preset--spacing--small)', paddingRight: '0px', paddingBottom: 'var(--wp--preset--spacing--small)', paddingLeft: '0px' }}
+            >
+                <span
+                    aria-hidden="true"
+                    className="wp-block-cover__background has-background-dim-100 has-background-dim wp-block-cover__gradient-background has-background-gradient has-black-primary-gradient-background">
+                </span>
 
-                <span aria-hidden="true"
-                    className="wp-block-cover__background has-background-dim-100 has-background-dim wp-block-cover__gradient-background has-background-gradient has-black-primary-gradient-background"></span>
-
-                <video className="wp-block-cover__video-background intrinsic-ignore" autoPlay muted loop playsInline
-                    src={hero}
+                <video
+                    className="wp-block-cover__video-background intrinsic-ignore"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    src="https://demo.wpzoom.com/edublock-pro/files/2022/12/pexels-olia-danilevich-8060813.mp4"
                     style={{ objectPosition: '35% 37%' }} data-object-fit="cover"
                     data-object-position="35% 37%"></video>
 
