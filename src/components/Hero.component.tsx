@@ -25,8 +25,10 @@ export const HeroSection: React.FC = () => {
                     className="wp-block-cover__image-background intrinsic-ignore"
                     alt="Hero Image"
                     src={heroImage}
-                    style={{ objectPosition: '35% 37%' }} data-object-fit="cover"
-                    data-object-position="35% 37%" />
+                    style={{ objectPosition: '35% 37%' }}
+                    data-object-fit="cover"
+                // data-object-position="35% 37%"
+                />
 
                 {/* <video
                     className="wp-block-cover__video-background intrinsic-ignore"
