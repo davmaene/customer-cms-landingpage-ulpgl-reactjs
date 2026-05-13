@@ -1,7 +1,7 @@
 import React from "react";
-import { Colors } from "../../utils/utils.colors";
-import { posts, staffMembers, centers, domainsData, activities } from "../../utils/utils.statiquedata";
-import { FiFileText, FiUsers, FiLayers, FiBookOpen, FiActivity, FiFolder } from "react-icons/fi";
+import { useData } from "../../contexts/DataContext";
+import { activities } from "../../utils/utils.statiquedata";
+import { FiFileText, FiUsers, FiLayers, FiBookOpen, FiActivity, FiFolder, FiTrendingUp } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 const FiFileTextIcon = FiFileText as any;
@@ -10,12 +10,7 @@ const FiLayersIcon = FiLayers as any;
 const FiBookOpenIcon = FiBookOpen as any;
 const FiActivityIcon = FiActivity as any;
 const FiFolderIcon = FiFolder as any;
-
-const totalFaculties = domainsData.reduce((acc, d) => acc + d.faculties.length, 0);
-const totalFilieres = domainsData.reduce(
-  (acc, d) => acc + d.faculties.reduce((a, f) => a + f.filiaires.length, 0),
-  0
-);
+const FiTrendingUpIcon = FiTrendingUp as any;
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -45,87 +40,72 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color, to }) =>
 };
 
 export const DashboardOverview: React.FC = () => {
+  const { posts, staffMembers, centers, domainsData } = useData();
+
+  const totalFaculties = domainsData.reduce((acc, d) => acc + d.faculties.length, 0);
+  const totalFilieres = domainsData.reduce(
+    (acc, d) => acc + d.faculties.reduce((a, f) => a + f.filiaires.length, 0),
+    0
+  );
+
   const recentPosts = [...posts].sort(
     (a, b) => new Date(b.post_date).getTime() - new Date(a.post_date).getTime()
   ).slice(0, 5);
 
+  const organizerCount = staffMembers.filter((m) => m.isOrganizer).length;
+
   return (
     <div>
-      <h4 className="mb-4" style={{ color: Colors.darkColor }}>Vue d'ensemble</h4>
+      <div className="dash-page-header mb-2">
+        <div>
+          <h4 className="dash-page-title">Vue d'ensemble</h4>
+          <p className="dash-page-subtitle">Bienvenue sur le tableau de bord</p>
+        </div>
+      </div>
 
       <div className="dashboard-stats-grid">
-        <StatCard
-          icon={<FiFileTextIcon size={24} />}
-          label="Articles"
-          value={posts.length}
-          color="#2563eb"
-          to="/dashboard/articles"
-        />
-        <StatCard
-          icon={<FiUsersIcon size={24} />}
-          label="Personnel"
-          value={staffMembers.length}
-          color="#16a34a"
-          to="/dashboard/staff"
-        />
-        <StatCard
-          icon={<FiLayersIcon size={24} />}
-          label="Centres"
-          value={centers.length}
-          color="#ea580c"
-          to="/dashboard/centres"
-        />
-        <StatCard
-          icon={<FiBookOpenIcon size={24} />}
-          label="Domaines"
-          value={domainsData.length}
-          color="#9333ea"
-          to="/dashboard/domaines"
-        />
-        <StatCard
-          icon={<FiFolderIcon size={24} />}
-          label="Facultés"
-          value={totalFaculties}
-          color="#0891b2"
-        />
-        <StatCard
-          icon={<FiActivityIcon size={24} />}
-          label="Activités"
-          value={activities.length}
-          color="#dc2626"
-        />
+        <StatCard icon={<FiFileTextIcon size={24} />} label="Articles" value={posts.length} color="#2563eb" to="/dashboard/articles" />
+        <StatCard icon={<FiUsersIcon size={24} />} label="Personnel" value={staffMembers.length} color="#16a34a" to="/dashboard/staff" />
+        <StatCard icon={<FiLayersIcon size={24} />} label="Centres" value={centers.length} color="#ea580c" to="/dashboard/centres" />
+        <StatCard icon={<FiBookOpenIcon size={24} />} label="Domaines" value={domainsData.length} color="#9333ea" to="/dashboard/domaines" />
+        <StatCard icon={<FiFolderIcon size={24} />} label="Facultés" value={totalFaculties} color="#0891b2" />
+        <StatCard icon={<FiActivityIcon size={24} />} label="Activités" value={activities.length} color="#dc2626" />
       </div>
 
       <div className="row mt-4">
         <div className="col-lg-7 mb-4">
           <div className="dashboard-card">
             <h6 className="dashboard-card-title">Articles récents</h6>
-            <div className="table-responsive">
-              <table className="table table-hover dashboard-table">
-                <thead>
-                  <tr>
-                    <th>Titre</th>
-                    <th>Catégorie</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentPosts.map((post) => (
-                    <tr key={post.id}>
-                      <td className="fw-medium">{post.post_title}</td>
-                      <td>
-                        <span className="badge bg-primary bg-opacity-10 text-primary">
-                          {post.post_category}
-                        </span>
-                      </td>
-                      <td className="text-muted">
-                        {new Date(post.post_date).toLocaleDateString("fr-FR")}
-                      </td>
+            {recentPosts.length === 0 ? (
+              <p className="text-muted text-center py-3">Aucun article</p>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-hover dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Titre</th>
+                      <th>Catégorie</th>
+                      <th>Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {recentPosts.map((post) => (
+                      <tr key={post.id}>
+                        <td className="fw-medium">{post.post_title}</td>
+                        <td>
+                          <span className="badge bg-primary bg-opacity-10 text-primary">
+                            {post.post_category}
+                          </span>
+                        </td>
+                        <td className="text-muted">
+                          {new Date(post.post_date).toLocaleDateString("fr-FR")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
 
@@ -155,19 +135,22 @@ export const DashboardOverview: React.FC = () => {
           </div>
 
           <div className="dashboard-card mt-3">
-            <h6 className="dashboard-card-title">Statistiques rapides</h6>
+            <h6 className="dashboard-card-title">
+              <FiTrendingUpIcon size={16} className="me-2" />
+              Statistiques rapides
+            </h6>
             <div className="d-flex flex-column gap-2">
               <div className="d-flex justify-content-between">
-                <span className="text-muted">Total filières</span>
-                <strong>{totalFilieres}</strong>
+                <span className="text-muted small">Total filières</span>
+                <strong className="small">{totalFilieres}</strong>
               </div>
               <div className="d-flex justify-content-between">
-                <span className="text-muted">Total facultés</span>
-                <strong>{totalFaculties}</strong>
+                <span className="text-muted small">Total facultés</span>
+                <strong className="small">{totalFaculties}</strong>
               </div>
               <div className="d-flex justify-content-between">
-                <span className="text-muted">Membres organisateurs</span>
-                <strong>{staffMembers.filter((s) => s.isOrganizer).length}</strong>
+                <span className="text-muted small">Membres organisateurs</span>
+                <strong className="small">{organizerCount}</strong>
               </div>
             </div>
           </div>

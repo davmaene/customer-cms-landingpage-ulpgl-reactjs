@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Colors } from "../../utils/utils.colors";
 import { APPNAME } from "../../utils/utils.constants";
-import { FiHome, FiFileText, FiUsers, FiLayers, FiBookOpen, FiMenu, FiX, FiLogOut } from "react-icons/fi";
+import { useAuth } from "../../contexts/AuthContext";
+import { FiHome, FiFileText, FiUsers, FiLayers, FiBookOpen, FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
 
 const FiHomeIcon = FiHome as any;
 const FiFileTextIcon = FiFileText as any;
@@ -12,6 +13,7 @@ const FiBookOpenIcon = FiBookOpen as any;
 const FiMenuIcon = FiMenu as any;
 const FiXIcon = FiX as any;
 const FiLogOutIcon = FiLogOut as any;
+const FiUserIcon = FiUser as any;
 
 interface SidebarLink {
   to: string;
@@ -29,6 +31,13 @@ const sidebarLinks: SidebarLink[] = [
 
 export const DashboardLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/dashboard/login");
+  };
 
   return (
     <div className="dashboard-wrapper">
@@ -61,6 +70,21 @@ export const DashboardLayout: React.FC = () => {
           ))}
         </nav>
         <div className="dashboard-sidebar-footer">
+          {user && (
+            <div className="dash-user-info">
+              <div className="dash-user-avatar">
+                <FiUserIcon size={16} />
+              </div>
+              <div className="dash-user-details">
+                <span className="dash-user-name">{user.name}</span>
+                <span className="dash-user-role">{user.role}</span>
+              </div>
+            </div>
+          )}
+          <button className="dashboard-sidebar-link dash-logout-btn" onClick={handleLogout}>
+            <FiLogOutIcon size={18} />
+            <span>Déconnexion</span>
+          </button>
           <a href="/" className="dashboard-sidebar-link">
             <FiLogOutIcon size={18} />
             <span>Retour au site</span>
@@ -87,6 +111,14 @@ export const DashboardLayout: React.FC = () => {
           <h5 className="dashboard-topbar-title mb-0" style={{ color: Colors.primaryColor }}>
             Tableau de bord
           </h5>
+          <div className="dash-topbar-right">
+            {user && (
+              <span className="dash-topbar-user">
+                <FiUserIcon size={16} />
+                {user.name}
+              </span>
+            )}
+          </div>
         </header>
         <div className="dashboard-content">
           <Outlet />
