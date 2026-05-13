@@ -40,6 +40,7 @@ export const Contacts: React.FC = () => {
                             </noscript>
                         </figure> */}
                             <div className="map-container" style={{ marginTop: '40px', width: '100%', height: '400px' }}>
+                               
                                 <iframe
                                     width="100%"
                                     height="450"
@@ -47,7 +48,7 @@ export const Contacts: React.FC = () => {
                                     loading="lazy"
                                     allowFullScreen
                                     referrerPolicy="no-referrer-when-downgrade"
-                                    src="https://www.google.com/maps/embed/v1/place?q=ULPGL+Campus+Moise+Goma"
+                                    src="https://www.google.com/maps/d/u/0/edit?mid=1t6p299ybpg6qHFJTBX0RaXb0Pn94PzM&usp=sharing"
                                 ></iframe>
                             </div>
                         </div>
