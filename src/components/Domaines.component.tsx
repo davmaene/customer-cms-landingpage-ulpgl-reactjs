@@ -1,7 +1,8 @@
-import { domainsData } from "../utils/utils.statiquedata";
+import { useData } from "../contexts/DataContext";
 import { DomaineItem } from "./subcomponents/DomaineItemComponent";
 
 export const DomainesSection: React.FC = () => {
+  const { domainsData } = useData();
 
   const educationIcon = (
     <div className="wp-block-outermost-icon-block">

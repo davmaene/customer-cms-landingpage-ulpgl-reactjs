@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { LoadingComponent } from '../components/subcomponents/LoadingComponent';
 import { useLocation, useParams } from 'react-router-dom';
 import { LuChevronRight } from 'react-icons/lu';
-import { centers, staffMembers } from '../utils/utils.statiquedata';
+import { useData } from '../contexts/DataContext';
 import { randomNumber, truncateText } from '../utils/utils.fucntions';
 import { SocialShare } from '../components/subcomponents/Sharesocial';
 import { BreadcrumbCenter } from '../components/subcomponents/BreadcrumpCenter';
@@ -16,12 +16,13 @@ const LuChevronRightIcon = LuChevronRight as any;
 
 export const Profile: React.FC = () => {
     const { profile } = useParams<{ profile: string }>();
+    const { staffMembers } = useData();
     const [item, setItem] = useState<StaffMember | null>(null);
 
     React.useEffect(() => {
         const foundCenter = staffMembers.find(c => c.slug === profile);
         setItem(foundCenter || null);
-    }, []);
+    }, [staffMembers, profile]);
 
     if (!item) {
         return <LoadingComponent />;

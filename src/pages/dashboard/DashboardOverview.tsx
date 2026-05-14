@@ -1,6 +1,5 @@
 import React from "react";
 import { useData } from "../../contexts/DataContext";
-import { activities } from "../../utils/utils.statiquedata";
 import { FiFileText, FiUsers, FiLayers, FiBookOpen, FiActivity, FiFolder, FiTrendingUp } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
@@ -40,7 +39,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color, to }) =>
 };
 
 export const DashboardOverview: React.FC = () => {
-  const { posts, staffMembers, centers, domainsData } = useData();
+  const { posts, staffMembers, centers, domainsData, activities } = useData();
 
   const totalFaculties = domainsData.reduce((acc, d) => acc + d.faculties.length, 0);
   const totalFilieres = domainsData.reduce(

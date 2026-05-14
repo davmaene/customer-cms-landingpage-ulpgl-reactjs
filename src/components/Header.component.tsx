@@ -13,7 +13,7 @@ import { IoIosArrowForward } from "react-icons/io";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { routes } from "../utils/utils.routes";
 import { ButtonComponent } from "./subcomponents/ButtonComponent";
-import { activities, centers, domainsData } from "../utils/utils.statiquedata";
+import { useData } from "../contexts/DataContext";
 import { Link } from "react-router-dom";
 import { shuffleArray } from "../utils/utils.fucntions";
 import { Hrseparator } from "./subcomponents/Hrseparator";
@@ -25,7 +25,7 @@ const SearchIcon = RiSearchLine as any;
 const ArrowForward = IoIosArrowForward as any;
 
 export const Header: React.FC = () => {
-
+  const { domainsData, centers, activities } = useData();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {

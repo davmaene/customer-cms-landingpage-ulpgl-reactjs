@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"; // 1. Ajout de useState
 import { Colors } from "../../utils/utils.colors";
 import { routes } from "../../utils/utils.routes";
-import { activities, centers, domainsData } from "../../utils/utils.statiquedata";
+import { useData } from "../../contexts/DataContext";
 import { NavItem } from "./NavItem";
 import { CiMenuFries } from "react-icons/ci";
 import { useLocation } from "react-router-dom";
@@ -9,6 +9,7 @@ import { useLocation } from "react-router-dom";
 const MenuIcon = CiMenuFries as any;
 
 export const MainNavigation: React.FC = () => {
+    const { domainsData, centers, activities } = useData();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
 

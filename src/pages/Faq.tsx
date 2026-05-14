@@ -4,11 +4,13 @@ import { Colors } from '../utils/utils.colors';
 import { LuChevronRight } from 'react-icons/lu';
 import heroImage from '../assets/images/hero-image.png';
 import { FAQItem } from '../components/subcomponents/Faqitem';
-import { faqs } from '../utils/utils.statiquedata';
+import { useData } from '../contexts/DataContext';
 
 const LuChevronRightIcon = LuChevronRight as any;
 
 export const Faq: React.FC = () => {
+    const { faqs } = useData();
+
     return (
         <>
             <BreadcrumpComponent
