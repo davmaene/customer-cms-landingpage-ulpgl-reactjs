@@ -1,9 +1,9 @@
 import { shuffleArray } from "../utils/utils.fucntions";
-import { centers } from "../utils/utils.statiquedata";
+import { useData } from "../contexts/DataContext";
 import { ExploreCenterCard } from "./subcomponents/ExploreCenterCard";
 
 export const ExploreCenters: React.FC = () => {
-
+    const { centers } = useData();
     const exploreItems = shuffleArray(centers);
 
     return (

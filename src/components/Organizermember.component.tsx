@@ -1,9 +1,11 @@
 import React from 'react';
-import { staffMembers, thisAcademicYear } from '../utils/utils.statiquedata';
+import { useData } from '../contexts/DataContext';
+import { thisAcademicYear } from '../utils/utils.statiquedata';
 import { Colors } from '../utils/utils.colors';
 import { ProfileCard } from './subcomponents/ProfileCard';
 
 export const Organizer: React.FC = () => {
+    const { staffMembers } = useData();
     const members: StaffMember[] = staffMembers.filter(member => member.isOrganizer);
 
     return (

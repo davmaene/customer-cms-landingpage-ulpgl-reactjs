@@ -1,5 +1,5 @@
 import React from 'react';
-import { staffMembers } from '../utils/utils.statiquedata';
+import { useData } from '../contexts/DataContext';
 import { Colors } from '../utils/utils.colors';
 import { FaEnvelope } from 'react-icons/fa';
 import { GiPhone } from 'react-icons/gi';
@@ -10,6 +10,7 @@ const EnvelopeIcon = FaEnvelope as any;
 const PhoneIcon = GiPhone as any;
 
 export const StaffDirectory: React.FC = () => {
+    const { staffMembers } = useData();
 
     return (
         <section id="other-contacts" className="wp-block-group has-global-padding" style={{ padding: '4rem 0' }}>

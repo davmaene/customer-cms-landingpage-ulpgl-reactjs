@@ -2,10 +2,11 @@ import { History } from "../components/History.component";
 import { Organizer } from "../components/Organizermember.component";
 import { VisionValues } from "../components/Visionvalues.component";
 import { APPNAME, APPOWNER } from "../utils/utils.constants";
-import { keyFacts } from "../utils/utils.statiquedata";
+import { useData } from "../contexts/DataContext";
 import bigCover from '../assets/images/hero-image.png';
 
 export const About: React.FC = () => {
+    const { keyFacts } = useData();
 
     return (
         <main className="wp-block-group site-content is-layout-flow wp-block-group-is-layout-flow" style={{ marginTop: 0 }}>

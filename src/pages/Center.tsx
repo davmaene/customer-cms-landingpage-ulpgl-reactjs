@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { LoadingComponent } from '../components/subcomponents/LoadingComponent';
 import { useLocation, useParams } from 'react-router-dom';
 import { LuChevronRight } from 'react-icons/lu';
-import { centers } from '../utils/utils.statiquedata';
+import { useData } from '../contexts/DataContext';
 import { randomNumber, truncateText } from '../utils/utils.fucntions';
 import { SocialShare } from '../components/subcomponents/Sharesocial';
 import { BreadcrumbCenter } from '../components/subcomponents/BreadcrumpCenter';
@@ -15,12 +15,13 @@ const LuChevronRightIcon = LuChevronRight as any;
 
 export const Center: React.FC = () => {
     const { center } = useParams<{ center: string }>();
+    const { centers } = useData();
     const [item, setItem] = useState<Center | null>(null);
 
     React.useEffect(() => {
         const foundCenter = centers.find(c => c.flug === center);
         setItem(foundCenter || null);
-    }, []);
+    }, [centers, center]);
 
     if (!item) {
         return <LoadingComponent />;

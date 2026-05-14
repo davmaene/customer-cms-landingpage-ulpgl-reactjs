@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BreadcrumpComponent } from '../components/subcomponents/BreadcrumpCompont';
-import { posts } from '../utils/utils.statiquedata';
+import { useData } from '../contexts/DataContext';
 import { ArticleCardLessInfo } from '../components/subcomponents/ArticleComponentLessInfo';
 import { useParams } from 'react-router-dom';
 import { IoIosArrowForward } from 'react-icons/io';
@@ -11,6 +11,7 @@ const ArrowForward = IoIosArrowForward as any;
 
 export const Articles: React.FC = () => {
     const { category } = useParams();
+    const { posts } = useData();
 
     const [itemOffset, setItemOffset] = useState(0);
     const itemsPerPage = 6;
