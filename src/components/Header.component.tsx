@@ -16,7 +16,6 @@ import { ButtonComponent } from "./subcomponents/ButtonComponent";
 import { activities, centers, domainsData } from "../utils/utils.statiquedata";
 import { Link } from "react-router-dom";
 import { shuffleArray } from "../utils/utils.fucntions";
-import { Hrseparator } from "./subcomponents/Hrseparator";
 
 const MarkerIcon = FaMapMarkerAlt as any;
 const EnvelopeIcon = FaEnvelope as any;
@@ -80,6 +79,7 @@ export const Header: React.FC = () => {
       <div className="main-nav-container" style={{ display: 'flex', alignItems: 'stretch', marginBottom: "8px", justifyContent: 'space-between', padding: '0 10px' }}>
         <div className="mega-menu-wrapper">
           <a href="#"
+            onClick={e => e.preventDefault()}
             style={{ border: 'none', cursor: 'pointer', padding: 0 }}
           >
             <div style={{ backgroundColor: Colors.darkColor, color: 'white', padding: '15px 30px', display: 'flex', alignItems: 'center' }}>
@@ -105,7 +105,7 @@ export const Header: React.FC = () => {
                   <h3>Nos Centres</h3>
                   <ul>
                     {shuffleArray(centers)?.slice(0, 6)?.map(centre => {
-                      return <li><Link to={routes.CENTRES.concat("/").concat(centre.href)}>{centre.title}</Link></li>
+                      return <li><Link to={(centre.href)}>{centre.title}</Link></li>
                     })}
                   </ul>
                 </div>
