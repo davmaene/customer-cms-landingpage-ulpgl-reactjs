@@ -7,6 +7,7 @@ const { seedDatabase } = require('./utils/seed');
 const authRoutes = require('./routes/auth');
 const contentRoutes = require('./routes/contents');
 const miscRoutes = require('./routes/misc');
+const cloudinaryRoutes = require('./routes/cloudinary');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'healthy' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/contents', contentRoutes);
+app.use('/api/cloudinary', cloudinaryRoutes);
 app.use('/api', miscRoutes);
 
 app.use((err, req, res, next) => {

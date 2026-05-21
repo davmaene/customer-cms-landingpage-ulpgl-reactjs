@@ -304,3 +304,93 @@ class TestUsers:
     def test_list_users_publisher_forbidden(self, session, publisher_token):
         r = session.get(f"{API}/users", headers=H(publisher_token))
         assert r.status_code == 403
+
+
+# ---------- cloudinary (iteration 2) ----------
+class TestCloudinary:
+    def test_config_admin(self, session, admin_token):
+        r = session.get(f"{API}/cloudinary/config", headers=H(admin_token))
+        assert r.status_code == 200
+        data = r.json()
+        assert "configured" in data
+        # Keys not yet provided
+        assert data["configured"] is False
+
+    def test_config_requires_auth(self, session):
+        r = session.get(f"{API}/cloudinary/config")
+        assert r.status_code == 401
+
+    def test_signature_returns_503_when_not_configured(self, session, admin_token):
+        r = session.get(f"{API}/cloudinary/signature", headers=H(admin_token))
+        # Expected because Cloudinary keys not yet provided
+        assert r.status_code == 503
+        assert "message" in r.json()
+
+    def test_signature_requires_auth(self, session):
+        r = session.get(f"{API}/cloudinary/signature")
+        assert r.status_code == 401
+
+
+# ---------- user registration (iteration 2) ----------
+class TestRegister:
+    def _faculty_id(self, session):
+        r = session.get(f"{API}/faculties")
+        return r.json()["items"][0]["id"]
+
+    def test_register_publisher_as_admin(self, session, admin_token):
+        ts = int(time.time())
+        email = f"TEST_pub_{ts}@example.com"
+        fid = self._faculty_id(session)
+        payload = {
+            "name": f"TEST Publisher {ts}",
+            "email": email,
+            "password": "TestPub@2026",
+            "role": "faculty_publisher",
+            "facultyId": fid,
+        }
+        r = session.post(f"{API}/auth/register", json=payload, headers=H(admin_token))
+        assert r.status_code == 201, r.text
+        user = r.json()["user"]
+        assert user["email"] == email.lower()
+        assert user["role"] == "faculty_publisher"
+        assert "password" not in user
+        # The new user must be able to login
+        r2 = session.post(f"{API}/auth/login", json={"email": email, "password": "TestPub@2026"})
+        assert r2.status_code == 200
+        assert r2.json()["user"]["email"] == email.lower()
+
+    def test_register_forbidden_for_publisher(self, session, publisher_token):
+        ts = int(time.time())
+        payload = {
+            "name": "Should Fail",
+            "email": f"TEST_forbidden_{ts}@example.com",
+            "password": "X@123456",
+            "role": "faculty_publisher",
+        }
+        r = session.post(f"{API}/auth/register", json=payload, headers=H(publisher_token))
+        assert r.status_code == 403
+
+    def test_register_requires_auth(self, session):
+        r = session.post(f"{API}/auth/register", json={"name": "x", "email": "x@x.com", "password": "x"})
+        assert r.status_code == 401
+
+    def test_register_duplicate_email(self, session, admin_token):
+        ts = int(time.time())
+        email = f"TEST_dup_{ts}@example.com"
+        fid = self._faculty_id(session)
+        payload = {
+            "name": "Dup",
+            "email": email,
+            "password": "Dup@12345",
+            "role": "faculty_publisher",
+            "facultyId": fid,
+        }
+        r1 = session.post(f"{API}/auth/register", json=payload, headers=H(admin_token))
+        assert r1.status_code == 201
+        r2 = session.post(f"{API}/auth/register", json=payload, headers=H(admin_token))
+        assert r2.status_code == 409
+
+    def test_register_missing_fields(self, session, admin_token):
+        r = session.post(f"{API}/auth/register", json={"email": "x@x.com"}, headers=H(admin_token))
+        assert r.status_code == 400
+

@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 2 testing of ULPGL — 3 new features: (1) Cloudinary signed upload endpoints, (2) TipTap RichEditor replacing HTML textarea, (3) 'Créer un publieur' button in dashboard Users tab. Backend pytest suite expanded from 30 → 39 tests, ALL 39 PASS (100%). Frontend Playwright flow validated end-to-end as admin: login → users tab shows create-user-button → modal with name/email/password/role/faculty fields → submit creates user (appears in list) → articles tab → new article modal exposes ImageUpload (cover-image-dropzone) + RichEditor (rich-editor) with full toolbar (ed-bold/ed-italic/ed-h1/ed-h2/ed-h3/ed-link/ed-image visible & clickable) → save creates article that appears in dashboard list. No regression on existing flows.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/cloudinary/signature", "issue": "Returns 503 because CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET env vars not yet provided — EXPECTED behaviour, not a bug. Once user supplies keys, endpoint should return signed payload."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dashboard → Articles → Nouveau modal (RichEditor)", "issues": ["TipTap console warning: '[tiptap warn]: Duplicate extension names found: [\"link\"]'. StarterKit already ships a Link extension and an explicit Link.configure is being added again in RichEditor.tsx. Functional impact: none today, but Tiptap recommends using StarterKit.configure({ link: { ... } }) or disabling the bundled link before re-adding to avoid future conflicts."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_ulpgl_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Provide CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET env vars to enable real signed upload (current 503 is expected mock state).",
+    "Optional: fix TipTap duplicate 'link' extension warning in /app/frontend/src/components/subcomponents/RichEditor.tsx by either omitting the standalone Link import or disabling StarterKit's bundled Link (StarterKit.configure({ link: false }))."
+  ],
+  "critical_code_review_comments": [
+    "routes/cloudinary.js properly gates /signature with requireAuth and returns 503 when not configured — good defensive design.",
+    "routes/auth.js POST /register correctly restricts to super_admin (403) and forces role to faculty_publisher unless super_admin is explicitly passed — good. Password hashed with bcrypt (cost 10).",
+    "Dashboard.tsx createPublisher modal stops propagation on inner click and closes on overlay — good UX. ImageUpload + RichEditor wired up with correct data-testids for QA.",
+    "Minor: server.js still uses sequelize.sync({ alter: true }) and CORS origin '*'. Acceptable for dev, but production should switch to migrations and an allow-list of origins."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_ulpgl_backend.py (added TestCloudinary + TestRegister classes — 9 new tests, total 39)"
+  ],
+  "success_rate": {"backend": "100% (39/39)", "frontend": "100% (all critical flows)"},
+  "test_credentials": "admin@ulpgl.net / Admin@2026 | publisher@ulpgl.net / Publisher@2026",
+  "seed_data_creation": "Tests create TEST_-prefixed users, contents, contacts, newsletters (clearly identifiable). Existing seed unchanged.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest suite at /app/backend/tests/test_ulpgl_backend.py now covers 39 cases including Cloudinary (config + signature 503) and admin user registration (success/forbidden/duplicate/missing-fields/auth-required). Frontend data-testids confirmed: create-user-button, create-user-modal, user-name/email/password/role/faculty-* inputs, user-create-submit, rich-editor + ed-bold/ed-italic/ed-h1/ed-h2/ed-h3/ed-link/ed-image, cover-image-dropzone. Cloudinary keys remain unset — signature endpoint MOCKED to return 503 (expected).",
+  "rca of the issue": "N/A — no bugs requiring RCA. Only a TipTap duplicate-extension console warning (cosmetic)."
+}

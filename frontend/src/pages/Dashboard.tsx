@@ -5,7 +5,9 @@ import { apiDel, apiGet, apiPost, apiPut } from "../utils/api";
 import { Colors } from "../utils/utils.colors";
 import { routes } from "../utils/utils.routes";
 import { toast } from "react-toastify";
-import { FiLogOut, FiPlus, FiCheckCircle, FiXCircle, FiEdit2, FiTrash2, FiMail, FiUsers, FiClock } from "react-icons/fi";
+import { FiLogOut, FiPlus, FiCheckCircle, FiXCircle, FiEdit2, FiTrash2, FiMail, FiUsers, FiClock, FiUserPlus } from "react-icons/fi";
+import { ImageUpload } from "../components/subcomponents/ImageUpload";
+import { RichEditor } from "../components/subcomponents/RichEditor";
 
 const Icon = (C: any) => C as any;
 const LogoutI = Icon(FiLogOut);
@@ -17,6 +19,7 @@ const TrashI = Icon(FiTrash2);
 const MailI = Icon(FiMail);
 const UsersI = Icon(FiUsers);
 const ClockI = Icon(FiClock);
+const UserPlusI = Icon(FiUserPlus);
 
 type Tab = "overview" | "articles" | "events" | "activities" | "pending" | "newsletter" | "messages" | "users";
 
@@ -34,6 +37,8 @@ export const Dashboard: React.FC = () => {
   const [showForm, setShowForm] = useState<null | "article" | "event" | "activity">(null);
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({ title: "", excerpt: "", content: "", category: "", coverImage: "", eventDate: "", location: "" });
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [userForm, setUserForm] = useState<any>({ name: "", email: "", password: "", role: "faculty_publisher", facultyId: "" });
 
   useEffect(() => {
     if (!loading && !user) navigate(routes.LOGIN);
@@ -135,6 +140,29 @@ export const Dashboard: React.FC = () => {
     await apiDel(`/contents/${id}`);
     toast.info("Supprimé");
     refreshAll();
+  };
+
+  const createPublisher = async () => {
+    const { name, email, password, role, facultyId } = userForm;
+    if (!name.trim() || !email.trim() || !password.trim())
+      return toast.warn("Nom, email et mot de passe requis");
+    if (password.length < 6) return toast.warn("Le mot de passe doit faire au moins 6 caractères");
+    if (role === "faculty_publisher" && !facultyId) return toast.warn("Veuillez sélectionner une faculté");
+    try {
+      await apiPost("/auth/register", {
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        role,
+        facultyId: facultyId ? Number(facultyId) : null,
+      });
+      toast.success("Compte créé avec succès");
+      setShowUserForm(false);
+      setUserForm({ name: "", email: "", password: "", role: "faculty_publisher", facultyId: "" });
+      refreshAll();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || "Erreur");
+    }
   };
 
   const statBadge = (label: string, value: number | string, color = Colors.primaryColor, IconC?: any) => (
@@ -357,7 +385,16 @@ export const Dashboard: React.FC = () => {
           )}
           {tab === "users" && isAdmin && (
             <div>
-              <h3>Utilisateurs</h3>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <h3 style={{ margin: 0 }}>Utilisateurs</h3>
+                <button
+                  data-testid="create-user-button"
+                  onClick={() => setShowUserForm(true)}
+                  style={{ background: Colors.primaryColor, color: "white", border: "none", padding: "10px 16px", borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <UserPlusI /> Créer un publieur
+                </button>
+              </div>
               <div style={{ background: "white", borderRadius: 8, overflow: "hidden" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead style={{ background: "#f7f8fa" }}>
@@ -398,7 +435,13 @@ export const Dashboard: React.FC = () => {
             <div style={{ display: "grid", gap: 12 }}>
               <input data-testid="form-title" placeholder="Titre" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
               <input placeholder="Catégorie (ex: Académique)" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
-              <input placeholder="URL de l'image de couverture" value={form.coverImage} onChange={(e) => setForm({ ...form, coverImage: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+              <ImageUpload
+                value={form.coverImage}
+                onChange={(url) => setForm({ ...form, coverImage: url })}
+                folder={showForm === "event" ? "ulpgl/events" : showForm === "activity" ? "ulpgl/activities" : "ulpgl/articles"}
+                label="Image de couverture"
+                testId="cover-image"
+              />
               {showForm === "event" && (
                 <>
                   <input type="datetime-local" value={form.eventDate} onChange={(e) => setForm({ ...form, eventDate: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
@@ -406,7 +449,15 @@ export const Dashboard: React.FC = () => {
                 </>
               )}
               <textarea placeholder="Résumé court" rows={2} value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
-              <textarea data-testid="form-content" placeholder="Contenu HTML" rows={8} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6, fontFamily: "monospace" }} />
+              <div data-testid="form-content">
+                <div style={{ fontSize: 13, color: "#444", marginBottom: 6, fontWeight: 500 }}>Contenu</div>
+                <RichEditor
+                  value={form.content}
+                  onChange={(html) => setForm({ ...form, content: html })}
+                  folder={showForm === "event" ? "ulpgl/events" : showForm === "activity" ? "ulpgl/activities" : "ulpgl/articles"}
+                  placeholder="Rédigez votre contenu ici (titres, listes, images, liens...)"
+                />
+              </div>
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
               <button onClick={() => setShowForm(null)} style={{ padding: "10px 18px", background: "#eee", border: "none", borderRadius: 6, cursor: "pointer" }}>
@@ -414,6 +465,73 @@ export const Dashboard: React.FC = () => {
               </button>
               <button data-testid="form-save-button" onClick={saveContent} style={{ padding: "10px 22px", background: Colors.primaryColor, color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
                 {editing ? "Mettre à jour" : isAdmin ? "Publier" : "Soumettre pour validation"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create publisher modal */}
+      {showUserForm && (
+        <div onClick={() => setShowUserForm(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div onClick={(e) => e.stopPropagation()} data-testid="create-user-modal" style={{ background: "white", borderRadius: 10, maxWidth: 520, width: "100%", padding: 28 }}>
+            <h3 style={{ marginTop: 0, color: Colors.primaryColor }}>Créer un compte utilisateur</h3>
+            <p style={{ color: "#666", fontSize: 14, marginBottom: 18 }}>Le compte sera immédiatement actif et pourra se connecter.</p>
+            <div style={{ display: "grid", gap: 12 }}>
+              <input
+                data-testid="user-name-input"
+                placeholder="Nom complet"
+                value={userForm.name}
+                onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                style={{ padding: 11, border: "1px solid #ddd", borderRadius: 6 }}
+              />
+              <input
+                data-testid="user-email-input"
+                type="email"
+                placeholder="Adresse email"
+                value={userForm.email}
+                onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                style={{ padding: 11, border: "1px solid #ddd", borderRadius: 6 }}
+              />
+              <input
+                data-testid="user-password-input"
+                type="password"
+                placeholder="Mot de passe (min. 6 caractères)"
+                value={userForm.password}
+                onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                style={{ padding: 11, border: "1px solid #ddd", borderRadius: 6 }}
+              />
+              <select
+                data-testid="user-role-select"
+                value={userForm.role}
+                onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                style={{ padding: 11, border: "1px solid #ddd", borderRadius: 6, background: "white" }}
+              >
+                <option value="faculty_publisher">Publieur faculté</option>
+                <option value="super_admin">Super administrateur</option>
+              </select>
+              {userForm.role === "faculty_publisher" && (
+                <select
+                  data-testid="user-faculty-select"
+                  value={userForm.facultyId}
+                  onChange={(e) => setUserForm({ ...userForm, facultyId: e.target.value })}
+                  style={{ padding: 11, border: "1px solid #ddd", borderRadius: 6, background: "white" }}
+                >
+                  <option value="">— Sélectionner une faculté —</option>
+                  {faculties.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
+              <button onClick={() => setShowUserForm(false)} style={{ padding: "10px 18px", background: "#eee", border: "none", borderRadius: 6, cursor: "pointer" }}>
+                Annuler
+              </button>
+              <button data-testid="user-create-submit" onClick={createPublisher} style={{ padding: "10px 22px", background: Colors.primaryColor, color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
+                Créer le compte
               </button>
             </div>
           </div>
