@@ -4,6 +4,6 @@ export const APPDNS = "https://ulpgl.ac.cd"
 export const APPCREATOR = "NTIC et Bureau de communication - ULPGL"
 export const APPCONTACTS = {
     email: ["rectorat@ulpgl.net", "info@ulpgl.net"],
-    phone: ["+243 812 345 678", "+243 977 565 723"],
+    phone: ["+243 998 668 267", "+243 977 556 726"],
     address: "Avenue du Lac, N°2 Quartier Himbi II, C. Goma, V. Goma"
-};
+}; 

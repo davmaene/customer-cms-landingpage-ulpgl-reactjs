@@ -223,7 +223,7 @@ const FeesSection: React.FC = () => {
         <div className="wp-block-columns is-layout-flex wp-container-core-columns-is-layout-28f84493 wp-block-columns-is-layout-flex">
           <div className="wp-block-column is-layout-flow wp-block-column-is-layout-flow" style={{ flexBasis: '50%' }}>
             <h2 className="wp-block-heading has-primary-color has-text-color has-max-48-font-size">
-              Informations sur les frais académiques et les frais connexes
+              Informations sur les frais académiques et les frais connexes | 2025 - 2026
             </h2>
             <p className="has-tertiary-color has-text-color">
               Consultez la grille officielle des frais académiques

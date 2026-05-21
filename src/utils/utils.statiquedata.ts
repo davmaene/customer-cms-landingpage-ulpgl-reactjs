@@ -19,7 +19,7 @@ export const faqs = [
     { number: "10.", question: "Proposez-vous un logement pour les étudiants ?", answer: "L’ULPGL Goma ne dispose pas de cités universitaires, mais oriente les étudiants vers des options de logement autour du campus." },
     { number: "11.", question: "Comment obtenir mon relevé de côtes ou attestation ?", answer: "Les documents académiques peuvent être retirés au secrétariat académique sur demande et après vérification du dossier." },
     { number: "12.", question: "Offrez-vous des cours en ligne ?", answer: "Oui, certaines formations utilisent une plateforme e-learning pour compléter les cours en présentiel." }
-]
+];
 
 export const domainsData: Array<{ domaine: string; href: string; faculties: Array<{ faculte: string; href: string; filiaires: Array<{ filiere: string, href: string, profil?: string, responsable: StaffMember, saf: StaffMember }> }> }> = [
     {
@@ -259,14 +259,14 @@ export const centers: Center[] = [
         domaineInterventions: ['Sciences Psychologiques et de l’Éducation'],
         description: 'Le CRIPE (Centre de Recherche en Psychologie et en Éducation) est un centre de recherche multidisciplinaire qui se consacre à l’étude des processus psychologiques et éducatifs. Il vise à comprendre les mécanismes d’apprentissage, les interactions sociales, et les facteurs influençant le développement humain. Le CRIPE mène des recherches innovantes pour améliorer les pratiques éducatives et promouvoir le bien-être psychologique.'
     },
-    {
-        flug: 'cieul',
-        title: 'CIEUL',
-        images: [],
-        href: `${routes.CENTRES}/cieul`,
-        domaineInterventions: ['Sciences de l’Éducation'],
-        description: 'Le CIEUL (Centre Interdisciplinaire d’Études et de Recherche en Éducation) est un centre de recherche qui se concentre sur les questions éducatives contemporaines. Il vise à promouvoir l’innovation pédagogique et à soutenir les pratiques éducatives basées sur des données probantes.'
-    },
+    // {
+    //     flug: 'cieul',
+    //     title: 'CIEUL',
+    //     images: [],
+    //     href: `${routes.CENTRES}/cieul`,
+    //     domaineInterventions: ['Sciences de l’Éducation'],
+    //     description: 'Le CIEUL (Centre Interdisciplinaire d’Études et de Recherche en Éducation) est un centre de recherche qui se concentre sur les questions éducatives contemporaines. Il vise à promouvoir l’innovation pédagogique et à soutenir les pratiques éducatives basées sur des données probantes.'
+    // },
     {
         flug: 'comite-ethique-recherche',
         title: 'Comité d’éthique de recherche',

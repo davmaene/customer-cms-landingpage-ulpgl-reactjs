@@ -1,7 +1,7 @@
 import React from 'react';
 import quoteImg from '../assets/images/177A7438.jpg';
 import { thisAcademicYear } from '../utils/utils.statiquedata';
-import { APPOWNER } from '../utils/utils.constants';
+import { APPNAME, APPOWNER } from '../utils/utils.constants';
 
 export const QuoteSection: React.FC = () => {
     return (
@@ -36,7 +36,7 @@ export const QuoteSection: React.FC = () => {
                     <div style={{ height: '30px' }} aria-hidden="true" className="wp-block-spacer"></div>
 
                     <p className="has-text-align-left has-lightgrey-color has-text-color has-small-font-size">
-                        Thème de l'année {thisAcademicYear} à {APPOWNER}
+                        Thème de l'année {thisAcademicYear} à {APPNAME}
                     </p>
 
                     <div style={{ height: '30px' }} aria-hidden="true" className="wp-block-spacer"></div>

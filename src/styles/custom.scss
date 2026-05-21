@@ -430,4 +430,66 @@ $prefix: "mo-";
     font-weight: 700
 }
 
+/* ==================== HORIZONTAL SCROLL MENU - VERSION FORTE ==================== */
+
+@media (max-width: 1024px) {
+
+    /* Cible directement le conteneur principal du menu */
+    .wp-block-navigation__responsive-container-content .wp-block-navigation__container {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
+        padding: 10px 0 15px 0;
+        width: 100%;
+        align-items: center;
+    }
+
+    /* Empêche fortement la déformation des items */
+    .wp-block-navigation__container>.wp-block-navigation-item,
+    .wp-block-navigation__container>li {
+        flex-shrink: 0 !important;
+        flex-basis: auto !important;
+        width: auto !important;
+        min-width: fit-content !important;
+        white-space: nowrap;
+    }
+
+    /* Style des liens */
+    .wp-block-navigation-item__content {
+        padding: 12px 18px !important;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        height: auto;
+    }
+
+    /* Améliore l'apparence du scroll */
+    .wp-block-navigation__container::-webkit-scrollbar {
+        height: 5px;
+    }
+
+    .wp-block-navigation__container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+    }
+}
+
+/* Mobile plus compact */
+@media (max-width: 767px) {
+    .wp-block-navigation__responsive-container-content .wp-block-navigation__container {
+        gap: 6px;
+        padding-bottom: 12px;
+    }
+
+    .wp-block-navigation-item__content {
+        padding: 10px 14px !important;
+        font-size: 15px;
+    }
+}
+
 @import "bootstrap";

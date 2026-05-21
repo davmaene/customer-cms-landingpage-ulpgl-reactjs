@@ -59,7 +59,7 @@ export const ArticleDerails: React.FC = () => {
                         </ul>
                     </div>
 
-                    <div className="mt-5">
+                    <div className="mt-5 mb-5">
                         <h2 className="h4 fw-bold mb-3">Tags</h2>
                         <div className="d-flex flex-wrap gap-2">
                             <span className="badge border text-secondary fw-normal">Journée du travail</span>
