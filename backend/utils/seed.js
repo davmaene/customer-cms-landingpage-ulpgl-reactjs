@@ -112,7 +112,7 @@ const SAMPLE_CONTENTS = [
 ];
 
 async function seedDatabase() {
-  console.log('🌱 Seeding database...');
+  console.log('Seeding database...');
 
   // Faculties + Filieres
   for (const fac of FACULTIES) {
