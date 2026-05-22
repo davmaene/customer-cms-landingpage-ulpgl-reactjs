@@ -24,11 +24,7 @@ export const MainNavigation: React.FC = () => {
   useEffect(() => closeMenu(), [location.pathname]);
 
   useEffect(() => {
-<<<<<<< HEAD
-    apiGet("/faculties").then((d) => setFaculties(d.items || [])).catch(() => { });
-=======
-    apiGet("/faculties").then((d) => setFaculties(d.rows || [])).catch(() => {});
->>>>>>> ba691660377269c67046c2a03384f5455c3809e1
+    apiGet("/faculties").then((d) => setFaculties(d.rows || [])).catch(() => { });
   }, []);
 
   const facultySubItems = faculties.map((fac) => ({
@@ -93,20 +89,12 @@ export const MainNavigation: React.FC = () => {
                   hasPlus
                   subItems={facultySubItems}
                 />
-                <NavItem href={routes.DOMAINES} label="Domaines" color={Colors.darkColor} />
+                {/* <NavItem href={routes.DOMAINES} label="Domaines" color={Colors.darkColor} /> */}
                 <NavItem href={routes.CENTRES} label="Centres" color={Colors.darkColor} />
                 <NavItem href={routes.SCHEDULES} label="Horaires" color={Colors.darkColor} />
                 <NavItem href={routes.ARTICLES} label="Articles" color={Colors.darkColor} />
-                <NavItem
-                  href={`${routes.ARTICLES}/evenement`}
-                  label="Événements"
-                  color={Colors.darkColor}
-                />
-                <NavItem
-                  href={`${routes.ARTICLES}/activite`}
-                  label="Activités"
-                  color={Colors.darkColor}
-                />
+                <NavItem href={`${routes.ARTICLES}/evenement`} label="Événements" color={Colors.darkColor} />
+                <NavItem href={`${routes.ARTICLES}/activite`} label="Activités" color={Colors.darkColor} />
                 <NavItem href={routes.CONTACTS} label="Contact" color={Colors.darkColor} />
               </ul>
             </div>
