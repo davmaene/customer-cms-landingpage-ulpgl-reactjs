@@ -136,10 +136,10 @@ export const AdminDashboard: React.FC = () => {
         apiGet("/centers/admin"),
       ]);
       setStats(s);
-      setContents(all.items);
-      setFaculties(fac.items);
-      setSchedules(sch.items);
-      setCenters(cen.items);
+      setContents(all.rows);
+      setFaculties(fac.rows);
+      setSchedules(sch.rows);
+      setCenters(cen.rows);
       if (isAdmin) {
         const [p, n, m, u] = await Promise.all([
           apiGet("/contents/admin", { status: "pending" }),
@@ -147,10 +147,10 @@ export const AdminDashboard: React.FC = () => {
           apiGet("/contact"),
           apiGet("/users"),
         ]);
-        setPending(p.items);
-        setNewsletters(n.items);
-        setMessages(m.items);
-        setUsers(u.items);
+        setPending(p.rows);
+        setNewsletters(n.rows);
+        setMessages(m.rows);
+        setUsers(u.rows);
       }
     } catch (e) {
       console.error(e);
@@ -195,7 +195,7 @@ export const AdminDashboard: React.FC = () => {
       setEditingContent(null);
       refreshAll();
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || "Erreur");
+      toast.error(e?.response?.data?.reason || e?.messageText || "Erreur");
     }
   };
   const approveContent = async (id: number) => { await apiPost(`/contents/${id}/approve`, {}); toast.success("Approuvé"); refreshAll(); };
@@ -248,7 +248,7 @@ export const AdminDashboard: React.FC = () => {
       setScheduleModal(false);
       refreshAll();
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || "Erreur");
+      toast.error(e?.response?.data?.reason || e?.messageText || "Erreur");
     }
   };
   const approveSchedule = async (id: number) => { await apiPost(`/schedules/${id}/approve`, {}); refreshAll(); };
@@ -322,7 +322,7 @@ export const AdminDashboard: React.FC = () => {
       setCenterModal(false);
       refreshAll();
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || "Erreur");
+      toast.error(e?.response?.data?.reason || e?.messageText || "Erreur");
     }
   };
   const approveCenter = async (id: number) => { await apiPost(`/centers/${id}/approve`, {}); refreshAll(); };
@@ -351,7 +351,7 @@ export const AdminDashboard: React.FC = () => {
       setUserForm(EMPTY_USER);
       refreshAll();
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || "Erreur");
+      toast.error(e?.response?.data?.reason || e?.messageText || "Erreur");
     }
   };
 

@@ -12,7 +12,7 @@ export const ExploreCenters: React.FC = () => {
     apiGet("/centers")
       .then((d) =>
         setItems(
-          (d.items || []).map((c: any) => ({
+          (d.rows || []).map((c: any) => ({
             flug: c.slug,
             title: c.title,
             images: c.images || [],

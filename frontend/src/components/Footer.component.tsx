@@ -48,7 +48,7 @@ export const Footer: React.FC = () => {
       toast.success(res.message || "Inscription réussie");
       setEmail("");
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Erreur d'inscription");
+      toast.error(err?.response?.data?.reason || err?.messageText || "Erreur d'inscription");
     } finally {
       setLoading(false);
     }

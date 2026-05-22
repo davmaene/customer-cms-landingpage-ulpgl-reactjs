@@ -33,7 +33,7 @@ export const Articles: React.FC = () => {
   const itemsPerPage = 9;
 
   useEffect(() => {
-    apiGet("/faculties").then((d) => setFaculties(d.items || [])).catch(() => {});
+    apiGet("/faculties").then((d) => setFaculties(d.rows || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export const Articles: React.FC = () => {
     const params: any = { type: typeFromParam(category), limit: 100 };
     if (facultyId && facultyId !== "all") params.facultyId = facultyId;
     apiGet("/contents", params)
-      .then((d) => setItems(d.items || []))
+      .then((d) => setItems(d.rows || []))
       .finally(() => setLoading(false));
     setItemOffset(0);
   }, [category, facultyId]);

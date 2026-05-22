@@ -172,7 +172,7 @@ const ArticlesSection: React.FC = () => {
   const [items, setItems] = React.useState<any[]>([]);
   React.useEffect(() => {
     import("../utils/api").then(({ apiGet }) =>
-      apiGet("/contents", { limit: 3 }).then((d) => setItems(d.items || [])).catch(() => setItems([]))
+      apiGet("/contents", { limit: 3 }).then((d) => setItems(d.rows || [])).catch(() => setItems([]))
     );
   }, []);
 

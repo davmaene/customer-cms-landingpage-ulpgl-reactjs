@@ -24,7 +24,7 @@ export const MainNavigation: React.FC = () => {
   useEffect(() => closeMenu(), [location.pathname]);
 
   useEffect(() => {
-    apiGet("/faculties").then((d) => setFaculties(d.items || [])).catch(() => {});
+    apiGet("/faculties").then((d) => setFaculties(d.rows || [])).catch(() => {});
   }, []);
 
   const facultySubItems = faculties.map((fac) => ({

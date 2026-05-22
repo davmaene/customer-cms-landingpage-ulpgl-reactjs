@@ -20,7 +20,7 @@ export const SchedulesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiGet("/faculties").then((d) => setFaculties(d.items)).catch(() => {});
+    apiGet("/faculties").then((d) => setFaculties(d.rows)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export const SchedulesPage: React.FC = () => {
     if (filters.type) params.type = filters.type;
     if (filters.facultyId) params.facultyId = filters.facultyId;
     if (filters.promotion) params.promotion = filters.promotion;
-    apiGet("/schedules", params).then((d) => setItems(d.items)).finally(() => setLoading(false));
+    apiGet("/schedules", params).then((d) => setItems(d.rows)).finally(() => setLoading(false));
   }, [filters]);
 
   return (
