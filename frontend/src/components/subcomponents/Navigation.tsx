@@ -24,7 +24,7 @@ export const MainNavigation: React.FC = () => {
   useEffect(() => closeMenu(), [location.pathname]);
 
   useEffect(() => {
-    apiGet("/faculties").then((d) => setFaculties(d.items || [])).catch(() => {});
+    apiGet("/faculties").then((d) => setFaculties(d.items || [])).catch(() => { });
   }, []);
 
   const facultySubItems = faculties.map((fac) => ({
@@ -80,19 +80,6 @@ export const MainNavigation: React.FC = () => {
             </button>
 
             <div className="wp-block-navigation__responsive-container-content" id="modal-2-content">
-              <form data-testid="mobile-search-form" onSubmit={submitMobileSearch} className="mobile-search-form">
-                <input
-                  data-testid="mobile-search-input"
-                  type="text"
-                  placeholder="Rechercher..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-                <button type="submit" aria-label="Rechercher">
-                  <SearchIcon />
-                </button>
-              </form>
-
               <ul className="wp-block-navigation__container is-responsive items-justified-center wp-block-navigation">
                 <NavItem href={routes.HOME} label="Accueil" color={Colors.darkColor} />
                 <NavItem

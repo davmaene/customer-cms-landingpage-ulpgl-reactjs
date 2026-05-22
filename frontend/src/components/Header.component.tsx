@@ -60,7 +60,7 @@ export const Header: React.FC = () => {
         <div className="top-bar-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "14px", flexWrap: "wrap", gap: 10 }}>
           <TopNavigation />
           <div className="top-right-actions" style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-            {user ? (
+            {/* {user ? (
               <Link
                 data-testid="header-dashboard-link"
                 to={routes.ADMIN}
@@ -72,7 +72,7 @@ export const Header: React.FC = () => {
               <Link data-testid="header-login-link" to={routes.LOGIN} style={{ color: "white", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
                 <ShieldIcon /> Connexion
               </Link>
-            )}
+            )} */}
             <NavItem href={routes.FAQ} label="FAQ" color={Colors.whiteColor} />
           </div>
         </div>
@@ -136,6 +136,7 @@ export const Header: React.FC = () => {
                     <li><Link to={routes.CONTACTS}>Nos contacts</Link></li>
                     <li><Link to={routes.FAQ}>Foire aux questions</Link></li>
                     <li><Link to={routes.SEARCH}>Recherche avancée</Link></li>
+                    <li><Link to={routes.LOGIN}>Connexion Admin</Link></li>
                   </ul>
                 </div>
               </div>

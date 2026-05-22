@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const slugify = require('slugify');
-const { User, Faculty, Filiere, Content } = require('../models');
+const { User, Faculty, Filiere, Content, Center, serializeCenter } = require('../models');
 
 const FACULTIES = [
   {
@@ -111,6 +111,61 @@ const SAMPLE_CONTENTS = [
   },
 ];
 
+const SAMPLE_CENTERS = [
+  {
+    slug: 'credda',
+    title: 'CREDDA',
+    description: "Le Centre de Recherche sur la Démocratie et le Développement en Afrique (CREDDA) est un cadre de réflexion regroupant l'élite intellectuelle africaine. Il sert de courroie de transmission entre la population et ses représentants pour promouvoir des solutions pratiques aux défis du développement.",
+    profile: "Lancé en 2008, le Centre de Recherche CREDDA-ULPGL s'est construit un agenda qui ne cesse de rencontrer les besoins de ses partenaires. Ses différentes expertises au service de toutes les bourses ne cessent de porter des résultats escomptés. Des universités, des Organismes internationaux, des Organisations de la Société Civile, des Associations membres des réseaux des jeunes et des femmes, des cours et tribunaux et des institutions d'appui à la démocratie bénéficient de notre accompagnement en vue d'affuter leurs stratégies de travail dans les domaines spécifiques.",
+    direction: {
+      name: 'Prof. Dr. Kennedy Kihangi Bindu',
+      role: 'Directeur du CREDDA',
+      slug: 'prof-dr-kennedy-kihangi-bindu',
+      description: "Le continent Africain est confronté à des crises qui obligent sans atermoiement de solutions intelligentes africaines.",
+      email: ['credda@ulpgl.net'],
+      phone: ['+243 824 174 956'],
+    },
+    domaineInterventions: [
+      'Études et collectes des données',
+      'Analyse des données',
+      'Gestion et coordination des projets',
+      'Partenariat | réseautage | networking',
+    ],
+    etudesRealisees: [
+      "Vulgarisation sur l'éducation aux droits humains",
+      "Programme d'anglais",
+      'Monitoring judiciaire et pénitentiaire',
+      "Sensibilisation sur la protection de l'environnement dans un contexte des conflits armés",
+    ],
+    partenaires: [
+      'Uhaki safi programme de renforcement de la justice à l\'Est',
+      'Harvard humanitarian initiative',
+      'Association des barreaux américains (ABA)',
+    ],
+    contacts: ['+243 824 174 956', 'www.credda-ulpgl.org'],
+  },
+  {
+    slug: 'cripe',
+    title: 'CRIPE',
+    description: "Le CRIPE (Centre de Recherche en Psychologie et en Éducation) est un centre de recherche multidisciplinaire qui se consacre à l'étude des processus psychologiques et éducatifs.",
+    profile: '',
+    direction: null,
+    domaineInterventions: ['Sciences Psychologiques et de l\'Éducation'],
+    etudesRealisees: [],
+    partenaires: [],
+    contacts: [],
+  },
+  {
+    slug: 'bersac',
+    title: 'BERSAC',
+    description: "Le BERSAC (Bureau d'Études et de Recherche en Sciences de l'Éducation) est un centre de recherche qui se consacre à l'analyse des pratiques éducatives et à l'évaluation des politiques éducatives.",
+    domaineInterventions: ['Sciences de l\'Éducation'],
+    etudesRealisees: [],
+    partenaires: [],
+    contacts: [],
+  },
+];
+
 async function seedDatabase() {
   console.log('Seeding database...');
 
@@ -186,6 +241,20 @@ async function seedDatabase() {
         facultyId: firstFaculty?.id,
         publishedAt: new Date(),
       });
+    }
+  }
+
+  // Sample centers (only if none exist)
+  const centerCount = await Center.count();
+  if (centerCount === 0) {
+    for (const c of SAMPLE_CENTERS) {
+      await Center.create(serializeCenter({
+        ...c,
+        images: c.images || [],
+        authorId: admin.id,
+        status: 'published',
+        publishedAt: new Date(),
+      }));
     }
   }
 

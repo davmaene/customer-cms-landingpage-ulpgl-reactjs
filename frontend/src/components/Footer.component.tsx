@@ -93,6 +93,7 @@ export const Footer: React.FC = () => {
               { href: routes.ANCIENS, label: "Anciens de l'" + APPNAME, isExternal: true },
               { href: routes.COMPLAINTS, label: "Plaintes", isExternal: true },
               { href: routes.LIBRARY, label: "Bibliothèque", isExternal: true },
+              { href: routes.LOGIN, label: "Admin site", isExternal: false },
             ]}
           />
 

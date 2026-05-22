@@ -61,6 +61,20 @@ const StatCard: React.FC<{ label: string; value: any; color?: string; Icon?: any
 );
 
 const EMPTY_CONTENT = { title: "", excerpt: "", content: "", category: "", coverImage: "", eventDate: "", location: "" };
+const EMPTY_CENTER = {
+  title: "",
+  description: "",
+  profile: "",
+  coverImage: "",
+  domaineInterventions: "",
+  etudesRealisees: "",
+  partenaires: "",
+  contacts: "",
+  directionName: "",
+  directionRole: "",
+  directionEmail: "",
+  directionPhone: "",
+};
 const EMPTY_SCHEDULE = {
   type: "cours" as "cours" | "examen",
   title: "",
@@ -106,19 +120,26 @@ export const AdminDashboard: React.FC = () => {
   const [userModal, setUserModal] = useState(false);
   const [userForm, setUserForm] = useState<any>(EMPTY_USER);
 
+  const [centers, setCenters] = useState<any[]>([]);
+  const [centerModal, setCenterModal] = useState(false);
+  const [editingCenter, setEditingCenter] = useState<any>(null);
+  const [centerForm, setCenterForm] = useState<any>(EMPTY_CENTER);
+
   const refreshAll = async () => {
     if (!user) return;
     try {
-      const [s, all, fac, sch] = await Promise.all([
+      const [s, all, fac, sch, cen] = await Promise.all([
         apiGet("/dashboard/stats"),
         apiGet("/contents/admin"),
         apiGet("/faculties"),
         apiGet("/schedules/admin"),
+        apiGet("/centers/admin"),
       ]);
       setStats(s);
       setContents(all.items);
       setFaculties(fac.items);
       setSchedules(sch.items);
+      setCenters(cen.items);
       if (isAdmin) {
         const [p, n, m, u] = await Promise.all([
           apiGet("/contents/admin", { status: "pending" }),
@@ -240,6 +261,80 @@ export const AdminDashboard: React.FC = () => {
     await apiDel(`/schedules/${id}`); refreshAll();
   };
 
+  // ---------- Center ----------
+  const splitLines = (s: string) => (s || "").split("\n").map((x) => x.trim()).filter(Boolean);
+  const joinLines = (arr?: any[]) => (arr || []).join("\n");
+
+  const openCenterCreate = () => {
+    setEditingCenter(null);
+    setCenterForm(EMPTY_CENTER);
+    setCenterModal(true);
+  };
+  const openCenterEdit = (it: any) => {
+    setEditingCenter(it);
+    setCenterForm({
+      title: it.title,
+      description: it.description || "",
+      profile: it.profile || "",
+      coverImage: it.coverImage || "",
+      domaineInterventions: joinLines(it.domaineInterventions),
+      etudesRealisees: joinLines(it.etudesRealisees),
+      partenaires: joinLines(it.partenaires),
+      contacts: joinLines(it.contacts),
+      directionName: it.direction?.name || "",
+      directionRole: it.direction?.role || "",
+      directionEmail: (it.direction?.email || []).join(", "),
+      directionPhone: (it.direction?.phone || []).join(", "),
+    });
+    setCenterModal(true);
+  };
+  const saveCenter = async () => {
+    if (!centerForm.title.trim() || !centerForm.description.trim())
+      return toast.warn("Titre et description requis");
+    const direction = centerForm.directionName.trim()
+      ? {
+          name: centerForm.directionName.trim(),
+          role: centerForm.directionRole.trim() || "Directeur",
+          slug: centerForm.directionName.toLowerCase().replace(/\s+/g, "-"),
+          email: centerForm.directionEmail.split(",").map((s: string) => s.trim()).filter(Boolean),
+          phone: centerForm.directionPhone.split(",").map((s: string) => s.trim()).filter(Boolean),
+        }
+      : null;
+    const payload = {
+      title: centerForm.title.trim(),
+      description: centerForm.description.trim(),
+      profile: centerForm.profile || "",
+      coverImage: centerForm.coverImage || "",
+      direction,
+      domaineInterventions: splitLines(centerForm.domaineInterventions),
+      etudesRealisees: splitLines(centerForm.etudesRealisees),
+      partenaires: splitLines(centerForm.partenaires),
+      contacts: splitLines(centerForm.contacts),
+    };
+    try {
+      if (editingCenter) {
+        await apiPut(`/centers/${editingCenter.id}`, payload);
+        toast.success("Centre mis à jour");
+      } else {
+        await apiPost("/centers", payload);
+        toast.success(isAdmin ? "Publié" : "Soumis pour validation");
+      }
+      setCenterModal(false);
+      refreshAll();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || "Erreur");
+    }
+  };
+  const approveCenter = async (id: number) => { await apiPost(`/centers/${id}/approve`, {}); refreshAll(); };
+  const rejectCenter = async (id: number) => {
+    const reason = prompt("Motif ?") || "Refusé";
+    await apiPost(`/centers/${id}/reject`, { reason }); refreshAll();
+  };
+  const removeCenter = async (id: number) => {
+    if (!window.confirm("Supprimer ?")) return;
+    await apiDel(`/centers/${id}`); refreshAll();
+  };
+
   // ---------- User creation ----------
   const createPublisher = async () => {
     const { name, email, password, role, facultyId } = userForm;
@@ -345,6 +440,42 @@ export const AdminDashboard: React.FC = () => {
           </div>
           {schedules.length === 0 && <p style={{ color: "#888" }}>Aucun horaire publié pour le moment.</p>}
           {schedules.map((s) => contentRow(s, "schedule"))}
+        </>
+      );
+    }
+    if (slug === "centers") {
+      return (
+        <>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <h3 style={{ margin: 0 }}>Centres de recherche</h3>
+            <button data-testid="new-center-button" onClick={openCenterCreate} style={{ background: Colors.primaryColor, color: "white", border: "none", padding: "10px 16px", borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+              <PlusI /> Nouveau centre
+            </button>
+          </div>
+          {centers.length === 0 && <p style={{ color: "#888" }}>Aucun centre.</p>}
+          {centers.map((c) => (
+            <div key={c.id} data-testid={`center-row-${c.id}`} style={{ background: "white", padding: 16, borderRadius: 8, boxShadow: "0 1px 6px rgba(0,0,0,0.05)", display: "flex", gap: 16, alignItems: "center", marginBottom: 10 }}>
+              {c.coverImage && <img src={c.coverImage} alt="" style={{ width: 86, height: 64, objectFit: "cover", borderRadius: 6 }} />}
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <span style={{ fontSize: 11, background: Colors.darkColor, color: "white", padding: "2px 8px", borderRadius: 4 }}>CENTRE</span>
+                  <StatusBadge status={c.status} />
+                </div>
+                <h4 style={{ margin: "6px 0 4px", fontSize: 15, color: Colors.darkColor }}>{c.title}</h4>
+                <div style={{ fontSize: 12, color: "#666" }}>{(c.description || "").slice(0, 100)}...</div>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {isAdmin && c.status === "pending" && (
+                  <>
+                    <button onClick={() => approveCenter(c.id)} style={{ background: "#28a745", color: "white", border: "none", padding: "8px 10px", borderRadius: 6, cursor: "pointer" }}><CheckI /></button>
+                    <button onClick={() => rejectCenter(c.id)} style={{ background: "#dc3545", color: "white", border: "none", padding: "8px 10px", borderRadius: 6, cursor: "pointer" }}><XI /></button>
+                  </>
+                )}
+                <button data-testid={`center-edit-${c.id}`} onClick={() => openCenterEdit(c)} style={{ background: "#f0f0f0", border: "none", padding: "8px 10px", borderRadius: 6, cursor: "pointer" }}><EditI /></button>
+                <button data-testid={`center-delete-${c.id}`} onClick={() => removeCenter(c.id)} style={{ background: "#fde2e2", border: "none", padding: "8px 10px", borderRadius: 6, cursor: "pointer", color: Colors.redColor }}><TrashI /></button>
+              </div>
+            </div>
+          ))}
         </>
       );
     }
@@ -550,6 +681,47 @@ export const AdminDashboard: React.FC = () => {
               <button onClick={() => setScheduleModal(false)} style={{ padding: "10px 18px", background: "#eee", border: "none", borderRadius: 6, cursor: "pointer" }}>Annuler</button>
               <button data-testid="schedule-save-button" onClick={saveSchedule} style={{ padding: "10px 22px", background: Colors.primaryColor, color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
                 {editingSchedule ? "Mettre à jour" : isAdmin ? "Publier" : "Soumettre"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Center modal */}
+      {centerModal && (
+        <div onClick={() => setCenterModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div onClick={(e) => e.stopPropagation()} data-testid="center-modal" style={{ background: "white", borderRadius: 10, maxWidth: 760, width: "100%", maxHeight: "92vh", overflow: "auto", padding: 28 }}>
+            <h3 style={{ marginTop: 0, color: Colors.primaryColor }}>{editingCenter ? "Modifier" : "Nouveau"} centre de recherche</h3>
+            <div style={{ display: "grid", gap: 12 }}>
+              <input data-testid="center-title" placeholder="Nom du centre (ex: CREDDA)" value={centerForm.title} onChange={(e) => setCenterForm({ ...centerForm, title: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+              <textarea data-testid="center-description" placeholder="Description courte" rows={3} value={centerForm.description} onChange={(e) => setCenterForm({ ...centerForm, description: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+              <ImageUpload value={centerForm.coverImage} onChange={(url) => setCenterForm({ ...centerForm, coverImage: url })} folder="ulpgl/uploads" label="Image de couverture (optionnelle)" testId="center-cover" />
+
+              <div style={{ borderTop: "1px solid #eee", paddingTop: 12, marginTop: 6 }}>
+                <div style={{ fontWeight: 600, color: "#444", marginBottom: 8 }}>Direction</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <input placeholder="Nom du directeur" value={centerForm.directionName} onChange={(e) => setCenterForm({ ...centerForm, directionName: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+                  <input placeholder="Rôle (ex: Directeur)" value={centerForm.directionRole} onChange={(e) => setCenterForm({ ...centerForm, directionRole: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+                  <input placeholder="Email(s) séparés par , " value={centerForm.directionEmail} onChange={(e) => setCenterForm({ ...centerForm, directionEmail: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+                  <input placeholder="Téléphone(s) séparés par ," value={centerForm.directionPhone} onChange={(e) => setCenterForm({ ...centerForm, directionPhone: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+                </div>
+              </div>
+
+              <div style={{ fontSize: 12, color: "#666", marginTop: 6 }}>Saisissez chaque entrée sur une nouvelle ligne ↓</div>
+              <textarea placeholder="Domaines d'intervention (un par ligne)" rows={3} value={centerForm.domaineInterventions} onChange={(e) => setCenterForm({ ...centerForm, domaineInterventions: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+              <textarea placeholder="Études réalisées (une par ligne)" rows={3} value={centerForm.etudesRealisees} onChange={(e) => setCenterForm({ ...centerForm, etudesRealisees: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+              <textarea placeholder="Partenaires (un par ligne)" rows={3} value={centerForm.partenaires} onChange={(e) => setCenterForm({ ...centerForm, partenaires: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+              <textarea placeholder="Contacts (un par ligne : téléphone, site web, etc.)" rows={2} value={centerForm.contacts} onChange={(e) => setCenterForm({ ...centerForm, contacts: e.target.value })} style={{ padding: 10, border: "1px solid #ddd", borderRadius: 6 }} />
+
+              <div>
+                <div style={{ fontSize: 13, color: "#444", marginBottom: 6, fontWeight: 500 }}>Profil détaillé (HTML)</div>
+                <RichEditor value={centerForm.profile} onChange={(html) => setCenterForm({ ...centerForm, profile: html })} folder="ulpgl/uploads" placeholder="Présentation longue du centre..." />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
+              <button onClick={() => setCenterModal(false)} style={{ padding: "10px 18px", background: "#eee", border: "none", borderRadius: 6, cursor: "pointer" }}>Annuler</button>
+              <button data-testid="center-save-button" onClick={saveCenter} style={{ padding: "10px 22px", background: Colors.primaryColor, color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600 }}>
+                {editingCenter ? "Mettre à jour" : isAdmin ? "Publier" : "Soumettre"}
               </button>
             </div>
           </div>

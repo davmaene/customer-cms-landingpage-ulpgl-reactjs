@@ -72,37 +72,17 @@ function App() {
             <Route path="events" element={<AdminDashboard />} />
             <Route path="activities" element={<AdminDashboard />} />
             <Route path="schedules" element={<AdminDashboard />} />
+            <Route path="centers" element={<AdminDashboard />} />
             <Route path="pending" element={<AdminDashboard />} />
             <Route path="newsletter" element={<AdminDashboard />} />
             <Route path="messages" element={<AdminDashboard />} />
             <Route path="users" element={<AdminDashboard />} />
           </Route>
 
-          {/* Auth pages — minimal layout (header only for navigation) */}
-          <Route
-            path={routes.LOGIN}
-            element={
-              <PublicLayout>
-                <Login />
-              </PublicLayout>
-            }
-          />
-          <Route
-            path={routes.FORGOT_PASSWORD}
-            element={
-              <PublicLayout>
-                <ForgotPassword />
-              </PublicLayout>
-            }
-          />
-          <Route
-            path={routes.RESET_PASSWORD}
-            element={
-              <PublicLayout>
-                <ResetPassword />
-              </PublicLayout>
-            }
-          />
+          {/* Auth pages — minimal layout (no public header/footer) */}
+          <Route path={routes.LOGIN} element={<><Login /><ToastContainer position="bottom-center" autoClose={3000} hideProgressBar /></>} />
+          <Route path={routes.FORGOT_PASSWORD} element={<><ForgotPassword /><ToastContainer position="bottom-center" autoClose={3000} hideProgressBar /></>} />
+          <Route path={routes.RESET_PASSWORD} element={<><ResetPassword /><ToastContainer position="bottom-center" autoClose={3000} hideProgressBar /></>} />
 
           {/* Public site */}
           <Route

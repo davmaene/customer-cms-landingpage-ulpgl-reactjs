@@ -1,30 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { LoadingComponent } from '../components/subcomponents/LoadingComponent';
-import { useLocation, useParams } from 'react-router-dom';
-import { LuChevronRight } from 'react-icons/lu';
-import { centers } from '../utils/utils.statiquedata';
+import { useParams } from 'react-router-dom';
 import { randomNumber, truncateText } from '../utils/utils.fucntions';
 import { SocialShare } from '../components/subcomponents/Sharesocial';
 import { BreadcrumbCenter } from '../components/subcomponents/BreadcrumpCenter';
 import { Hrseparator } from '../components/subcomponents/Hrseparator';
 import { ContactLink } from '../components/subcomponents/ContactComponent';
 import { ProfileCard } from '../components/subcomponents/ProfileCard';
+import { apiGet } from '../utils/api';
+import { NotFound } from './NotFound';
 
 export const Center: React.FC = () => {
     const { center } = useParams<{ center: string }>();
-    const [item, setItem] = useState<Center | null>(null);
+    const [item, setItem] = useState<any>(undefined);
+    const [otherCenters, setOtherCenters] = useState<any[]>([]);
 
-    React.useEffect(() => {
-        const foundCenter = centers.find(c => c.flug === center);
-        setItem(foundCenter || null);
-    }, []);
+    useEffect(() => {
+        if (!center) return;
+        apiGet(`/centers/slug/${center}`)
+            .then((d) => setItem(d.item))
+            .catch(() => setItem(null));
+        apiGet(`/centers`)
+            .then((d) => setOtherCenters((d.items || []).filter((c: any) => c.slug !== center)))
+            .catch(() => {});
+    }, [center]);
 
-    if (!item) {
-        return <LoadingComponent />;
-    }
+    if (item === undefined) return <LoadingComponent />;
+    if (item === null) return <NotFound />;
 
-    const { title, description, domaineInterventions, href, images, contacts, etudesRealisees, partenaires, flug, profile, direction } = item;
+    const { title, description, domaineInterventions, images, contacts, etudesRealisees, partenaires, slug: flug, profile, direction } = item;
 
     return (
         <>
@@ -62,8 +67,8 @@ export const Center: React.FC = () => {
                             <h2 className="h4 fw-bold mb-3">Autres centres de recherche</h2>
                             <hr className="mb-3" />
                             <ul className="list-unstyled">
-                                {centers.filter(c => c.flug !== center).map((center, idx) => (
-                                    <li key={idx} className="mb-2"><a href={center.href} className="text-decoration-none text-dark">{center.title}</a></li>
+                                {otherCenters.map((c: any, idx: number) => (
+                                    <li key={idx} className="mb-2"><a href={`/app/centres/${c.slug}`} className="text-decoration-none text-dark">{c.title}</a></li>
                                 ))}
                             </ul>
                         </div>
@@ -77,7 +82,7 @@ export const Center: React.FC = () => {
                             />
                             {images?.length && images.length > 0 ? (
                                 <div className="row g-3 my-4">
-                                    {images?.map((image, idx) => (
+                                    {images?.map((image: string, idx: number) => (
                                         <div className="col-6 col-md-4" key={idx}>
                                             <img src={image} className="img-fluid rounded" alt="Gallery" />
                                         </div>
@@ -95,7 +100,7 @@ export const Center: React.FC = () => {
                             <hr className="my-4" style={{ opacity: 0.1 }} />
                             <h2 className="h4 fw-bold mb-3">Domaines d'intervention</h2>
                             <ul>
-                                {domaineInterventions.map(domaine => {
+                                {(domaineInterventions || []).map((domaine: string) => {
                                     return (<li>{domaine}</li>);
                                 })}
                             </ul>
@@ -103,7 +108,7 @@ export const Center: React.FC = () => {
                             <hr className="my-4" style={{ opacity: 0.1 }} />
                             <h2 className="h4 fw-bold mb-3">Etudes réalisées</h2>
                             <ul>
-                                {etudesRealisees?.map(etude => {
+                                {etudesRealisees?.map((etude: string) => {
                                     return (<li>{etude}</li>);
                                 })}
                             </ul>
@@ -111,7 +116,7 @@ export const Center: React.FC = () => {
                             <hr className="my-4" style={{ opacity: 0.1 }} />
                             <h2 className="h4 fw-bold mb-3">Partenaires</h2>
                             <ul>
-                                {partenaires?.map(partenaire => {
+                                {partenaires?.map((partenaire: string) => {
                                     return (<li>{partenaire}</li>);
                                 })}
                             </ul>
@@ -127,7 +132,7 @@ export const Center: React.FC = () => {
                             <hr className="my-4" style={{ opacity: 0.1 }} />
                             <h2 className="h4 fw-bold mb-3">Contacts du centre</h2>
                             <ul>
-                                {contacts?.map(contact => {
+                                {contacts?.map((contact: string) => {
                                     return (<li><ContactLink value={contact} /></li>);
                                 })}
                             </ul>

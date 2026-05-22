@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { User, Faculty } = require('../models');
+const { Response } = require('../helpers/helper.response');
 
 const sign = (user) =>
   jwt.sign(
@@ -22,7 +23,7 @@ const requireAuth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (e) {
-    return res.status(401).json({ message: 'Token invalide ou expiré' });
+    return Response(res, 401, { message: "'Token invalide ou expiré' ", data: e })
   }
 };
 

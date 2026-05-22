@@ -89,19 +89,62 @@ const Schedule = sequelize.define('Schedule', {
   title: { type: DataTypes.STRING(255), allowNull: false },
   facultyId: { type: DataTypes.INTEGER, allowNull: false },
   filiereId: { type: DataTypes.INTEGER, allowNull: true },
-  promotion: { type: DataTypes.STRING(40), allowNull: false }, // L1, L2, L3, M1, M2
-  academicYear: { type: DataTypes.STRING(20), allowNull: true }, // 2025-2026
-  semester: { type: DataTypes.STRING(20), allowNull: true }, // S1, S2
+  promotion: { type: DataTypes.STRING(40), allowNull: false },
+  academicYear: { type: DataTypes.STRING(20), allowNull: true },
+  semester: { type: DataTypes.STRING(20), allowNull: true },
   startDate: { type: DataTypes.DATE, allowNull: true },
   endDate: { type: DataTypes.DATE, allowNull: true },
   location: { type: DataTypes.STRING(255), allowNull: true },
-  fileUrl: { type: DataTypes.STRING(500), allowNull: true }, // PDF or image URL via Cloudinary
+  fileUrl: { type: DataTypes.STRING(500), allowNull: true },
   description: { type: DataTypes.TEXT, allowNull: true },
   authorId: { type: DataTypes.INTEGER, allowNull: false },
   status: { type: DataTypes.ENUM('pending', 'published', 'rejected'), defaultValue: 'pending' },
   publishedAt: { type: DataTypes.DATE, allowNull: true },
   rejectionReason: { type: DataTypes.TEXT, allowNull: true },
 }, { tableName: 'schedules', timestamps: true });
+
+const Center = sequelize.define('Center', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  slug: { type: DataTypes.STRING(160), unique: true, allowNull: false },
+  title: { type: DataTypes.STRING(200), allowNull: false },
+  description: { type: DataTypes.TEXT, allowNull: false },
+  profile: { type: DataTypes.TEXT('long'), allowNull: true },
+  coverImage: { type: DataTypes.STRING(500), allowNull: true },
+  images: { type: DataTypes.TEXT, allowNull: true },
+  direction: { type: DataTypes.TEXT, allowNull: true },
+  domaineInterventions: { type: DataTypes.TEXT, allowNull: true },
+  etudesRealisees: { type: DataTypes.TEXT, allowNull: true },
+  partenaires: { type: DataTypes.TEXT, allowNull: true },
+  contacts: { type: DataTypes.TEXT, allowNull: true },
+  facultyId: { type: DataTypes.INTEGER, allowNull: true },
+  authorId: { type: DataTypes.INTEGER, allowNull: false },
+  status: { type: DataTypes.ENUM('pending', 'published', 'rejected'), defaultValue: 'pending' },
+  publishedAt: { type: DataTypes.DATE, allowNull: true },
+  rejectionReason: { type: DataTypes.TEXT, allowNull: true },
+}, {
+  tableName: 'centers',
+  timestamps: true,
+});
+
+// Helpers to (de)serialize JSON fields
+const JSON_FIELDS = ['images', 'direction', 'domaineInterventions', 'etudesRealisees', 'partenaires', 'contacts'];
+function serializeCenter(values) {
+  const out = { ...values };
+  JSON_FIELDS.forEach((f) => {
+    if (out[f] !== undefined && typeof out[f] !== 'string') out[f] = JSON.stringify(out[f] ?? null);
+  });
+  return out;
+}
+function deserializeCenter(instance) {
+  if (!instance) return instance;
+  const obj = instance.toJSON ? instance.toJSON() : { ...instance };
+  JSON_FIELDS.forEach((f) => {
+    if (typeof obj[f] === 'string') {
+      try { obj[f] = JSON.parse(obj[f]); } catch { obj[f] = null; }
+    }
+  });
+  return obj;
+}
 
 // Associations
 Faculty.hasMany(Filiere, { foreignKey: 'facultyId', as: 'filieres', onDelete: 'CASCADE' });
@@ -121,4 +164,7 @@ Faculty.hasMany(Schedule, { foreignKey: 'facultyId', as: 'schedules' });
 
 PasswordResetToken.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-module.exports = { sequelize, User, Faculty, Filiere, Content, Newsletter, ContactMessage, PasswordResetToken, Schedule };
+Center.belongsTo(Faculty, { foreignKey: 'facultyId', as: 'faculty' });
+Center.belongsTo(User, { foreignKey: 'authorId', as: 'author' });
+
+module.exports = { sequelize, User, Faculty, Filiere, Content, Newsletter, ContactMessage, PasswordResetToken, Schedule, Center, serializeCenter, deserializeCenter };
