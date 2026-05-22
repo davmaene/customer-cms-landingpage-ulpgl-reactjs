@@ -110,7 +110,7 @@ export const AdminLayout: React.FC = () => {
               end={it.to === ""}
               to={`${ADMIN_BASE}${it.to}`}
               onClick={() => setSidebarOpen(false)}
-              data-testid={`admin-nav-${it.to || "overview"}`}
+              data-testid={`admin-nav-${(it.to || "overview").replace(/^\//, "")}`}
               style={({ isActive }) => ({
                 display: "flex",
                 alignItems: "center",

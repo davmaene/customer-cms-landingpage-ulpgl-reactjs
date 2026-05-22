@@ -1,6 +1,6 @@
 # ULPGL-Goma — Landing Page + CMS (PRD)
 
-**Dernière mise à jour :** 21 Mai 2026 (itération 2)
+**Dernière mise à jour :** 22 Mai 2026 (itération 3)
 
 ## Énoncé original
 > "voici un landing page, je voudrais que tu optimise les menus sur mobile et tablette, proposes les pages qui manquent entre autre les pages des facultés et domaines, implémente la recherche qui peut être un événement, une activité, une fac, une filière, ... puis ajoute un petit dashboard qui va me permettre de publier les articles, les événements, activités... crée deux groupes d'utilisateurs (publieur faculté + super-admin valideur). Newsletter, form contact côté front et backend en NodeJS-Express, Sequelize, MySQL."
@@ -58,6 +58,12 @@
 - **Upload d'images Cloudinary** (signed upload via `/api/cloudinary/signature`) — composant `ImageUpload` (drag & drop, prévisualisation, suppression). Clés à fournir dans `.env` : `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`. Endpoint renvoie 503 si non configuré.
 - **Éditeur WYSIWYG TipTap** (`RichEditor`) — H1/H2/H3/paragraphe, gras/italique/code, listes (à puces & numérotées), citation, liens, **insertion d'images directement via Cloudinary**, undo/redo. Remplace l'ancien textarea HTML brut dans le dashboard.
 - **Création de comptes utilisateurs** — Bouton "Créer un publieur" dans l'onglet *Utilisateurs* du dashboard (super-admin uniquement). Modal avec nom, email, mot de passe, rôle (publieur faculté / super-admin), faculté associée. Branché sur `POST /api/auth/register`.
+
+### ✅ Phase 3 — Itération 3 (22 Mai 2026)
+- **Mot de passe oublié / réinitialisation** — Endpoints `POST /api/auth/forgot-password` (anti-leak : toujours 200) + `POST /api/auth/reset-password` (token 32-bytes hex, expiration 1h, marquage `usedAt` anti-replay). Modèle `PasswordResetToken`. Pages `/forgot-password` + `/reset-password?token=...`. Lien sur la page Login. Si SendGrid non configuré, le `devLink` est renvoyé en réponse pour usage développeur.
+- **Dashboard sur layout dédié** — Route `/app/admin` avec `AdminLayout` (sidebar permanente à gauche + topbar minimaliste) **sans le Header/Footer du site public**. Sidebar responsive (drawer < 992px). `AdminDashboard` est désormais route-driven (`/app/admin`, `/app/admin/articles`, `/app/admin/schedules`, etc.). Lien "Voir le site" dans la sidebar pour retourner à la home.
+- **TopNavigation mobile fonctionnelle** — Réécriture en simple `<ul>` flexbox (Bibliothèque / Metanoia / Kauta / Crèche). Sur mobile (<768px), liens en scroll horizontal lisses, scroll tactile activé.
+- **Horaires cours & examens** — Nouveau modèle `Schedule` (type cours/examen, faculté, filière, promotion L1/L2/L3/M1/M2, année académique, semestre, dates début/fin, lieu, fichier joint via Cloudinary, description). CRUD `/api/schedules` avec workflow de validation (publisher → pending, admin → published, approve/reject). Onglet *Horaires* dans le dashboard. **Page publique** `/app/horaires` avec 3 filtres (type / faculté / promotion) et cartes détaillées avec téléchargement du document.
 
 ### Tests
 - Backend : 30 tests pytest, **100% passants**
