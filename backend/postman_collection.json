@@ -1,0 +1,614 @@
+{
+  "info": {
+    "_postman_id": "ulpgl-cms-collection-001",
+    "name": "ULPGL-Goma — Backend API",
+    "description": "Collection complète de l'API backend ULPGL-Goma (Node.js + Express + Sequelize + MariaDB).\n\n**Auth** : JWT Bearer token (récupéré via `/auth/login`)\n\n**Comptes par défaut (seed)** :\n- Super admin : `admin@ulpgl.net` / `Admin@2026`\n- Publieur faculté : `publisher@ulpgl.net` / `Publisher@2026`\n\n**Variables** :\n- `{{base_url}}` : URL du backend (par défaut http://localhost:8001)\n- `{{token}}` : auto-rempli après `Login Admin` ou `Login Publisher`\n- `{{content_id}}`, `{{schedule_id}}`, `{{center_id}}` : auto-remplis lors des créations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8001", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "content_id", "value": "", "type": "string" },
+    { "key": "schedule_id", "value": "", "type": "string" },
+    { "key": "center_id", "value": "", "type": "string" },
+    { "key": "faculty_id", "value": "1", "type": "string" },
+    { "key": "reset_token", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /api",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/api", "host": ["{{base_url}}"], "path": ["api"] }
+          }
+        },
+        {
+          "name": "GET /api/health",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/health", "host": ["{{base_url}}"], "path": ["api", "health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json();",
+                  "  pm.collectionVariables.set('token', data.token);",
+                  "  console.log('Token saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@ulpgl.net\",\n  \"password\": \"Admin@2026\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] },
+            "description": "Renvoie `{ token, user }`. Le token est automatiquement sauvegardé dans la variable `{{token}}`."
+          }
+        },
+        {
+          "name": "Login (Publisher)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('token', pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"publisher@ulpgl.net\",\n  \"password\": \"Publisher@2026\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Me (current user)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api", "auth", "me"] }
+          }
+        },
+        {
+          "name": "Register new user (Admin only)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@ulpgl.net\",\n  \"password\": \"Jane@2026\",\n  \"role\": \"faculty_publisher\",\n  \"facultyId\": {{faculty_id}}\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"] },
+            "description": "Réservé super_admin. `role` ∈ ['super_admin', 'faculty_publisher']. `facultyId` requis pour publisher."
+          }
+        },
+        {
+          "name": "Forgot password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.devLink) {",
+                  "  const m = data.devLink.match(/token=([a-f0-9]+)/);",
+                  "  if (m) { pm.collectionVariables.set('reset_token', m[1]); console.log('reset_token saved'); }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@ulpgl.net\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/forgot-password", "host": ["{{base_url}}"], "path": ["api", "auth", "forgot-password"] },
+            "description": "Renvoie toujours 200 (anti-leak). Si SendGrid n'est pas configuré, un `devLink` est inclus dans la réponse et le `reset_token` est extrait automatiquement."
+          }
+        },
+        {
+          "name": "Reset password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"password\": \"NewPassword@2026\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/reset-password", "host": ["{{base_url}}"], "path": ["api", "auth", "reset-password"] },
+            "description": "Token unique (anti-replay : `usedAt` set après succès). Expiration : 1h."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Faculties",
+      "item": [
+        {
+          "name": "List all faculties",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/faculties", "host": ["{{base_url}}"], "path": ["api", "faculties"] }
+          }
+        },
+        {
+          "name": "Get faculty by slug",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/faculties/faculte-sciences-et-technologies",
+              "host": ["{{base_url}}"],
+              "path": ["api", "faculties", "faculte-sciences-et-technologies"]
+            }
+          }
+        },
+        {
+          "name": "Get filière by slugs",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/faculties/faculte-sciences-et-technologies/filieres/genie-informatique",
+              "host": ["{{base_url}}"],
+              "path": ["api", "faculties", "faculte-sciences-et-technologies", "filieres", "genie-informatique"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contents (Articles, Events, Activities)",
+      "item": [
+        {
+          "name": "List published contents",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/contents?type=article&limit=50&facultyId={{faculty_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contents"],
+              "query": [
+                { "key": "type", "value": "article", "description": "article | event | activity (optionnel)" },
+                { "key": "limit", "value": "50" },
+                { "key": "facultyId", "value": "{{faculty_id}}", "description": "Filtrer par faculté (optionnel)" },
+                { "key": "status", "value": "published", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get content by slug",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/contents/slug/celebration-de-la-journee-internationale-du-travail-a-lulpgl-goma",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contents", "slug", "celebration-de-la-journee-internationale-du-travail-a-lulpgl-goma"]
+            }
+          }
+        },
+        {
+          "name": "Admin list (own contents if publisher, all if admin)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/contents/admin?status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contents", "admin"],
+              "query": [{ "key": "status", "value": "pending", "description": "pending | published | rejected (optionnel)" }]
+            }
+          }
+        },
+        {
+          "name": "Create content",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('content_id', pm.response.json().item.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"article\",\n  \"title\": \"Mon nouvel article\",\n  \"excerpt\": \"Résumé court\",\n  \"content\": \"<p>Contenu HTML complet de l'article.</p>\",\n  \"category\": \"Académique\",\n  \"coverImage\": \"https://example.com/cover.jpg\",\n  \"eventDate\": null,\n  \"location\": null\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/contents", "host": ["{{base_url}}"], "path": ["api", "contents"] },
+            "description": "**Publisher** → status=pending\n**Admin** → status=published\n\n`type` ∈ ['article', 'event', 'activity'].\nPour event : `eventDate` (ISO datetime) et `location` sont utilisés."
+          }
+        },
+        {
+          "name": "Update content",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Titre mis à jour\",\n  \"excerpt\": \"Nouveau résumé\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/contents/{{content_id}}", "host": ["{{base_url}}"], "path": ["api", "contents", "{{content_id}}"] }
+          }
+        },
+        {
+          "name": "Approve content (Admin)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/api/contents/{{content_id}}/approve", "host": ["{{base_url}}"], "path": ["api", "contents", "{{content_id}}", "approve"] }
+          }
+        },
+        {
+          "name": "Reject content (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Contenu non conforme\"\n}" },
+            "url": { "raw": "{{base_url}}/api/contents/{{content_id}}/reject", "host": ["{{base_url}}"], "path": ["api", "contents", "{{content_id}}", "reject"] }
+          }
+        },
+        {
+          "name": "Delete content",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/contents/{{content_id}}", "host": ["{{base_url}}"], "path": ["api", "contents", "{{content_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schedules (Horaires)",
+      "item": [
+        {
+          "name": "List public schedules",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/schedules?type=cours&promotion=L1&facultyId={{faculty_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "schedules"],
+              "query": [
+                { "key": "type", "value": "cours", "description": "cours | examen (optionnel)" },
+                { "key": "promotion", "value": "L1", "description": "L1 | L2 | L3 | M1 | M2 (optionnel)" },
+                { "key": "facultyId", "value": "{{faculty_id}}", "description": "optionnel" },
+                { "key": "academicYear", "value": "2025-2026", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin list schedules",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/schedules/admin", "host": ["{{base_url}}"], "path": ["api", "schedules", "admin"] }
+          }
+        },
+        {
+          "name": "Create schedule",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('schedule_id', pm.response.json().item.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"cours\",\n  \"title\": \"Horaire S1 — Génie Informatique L2\",\n  \"facultyId\": {{faculty_id}},\n  \"filiereId\": null,\n  \"promotion\": \"L2\",\n  \"academicYear\": \"2025-2026\",\n  \"semester\": \"S1\",\n  \"startDate\": \"2026-01-15T08:00:00.000Z\",\n  \"endDate\": \"2026-05-15T18:00:00.000Z\",\n  \"location\": \"Salle 204\",\n  \"fileUrl\": \"\",\n  \"description\": \"Horaire complet pour le semestre.\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/schedules", "host": ["{{base_url}}"], "path": ["api", "schedules"] }
+          }
+        },
+        {
+          "name": "Update schedule",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Horaire mis à jour\",\n  \"location\": \"Salle 305\"\n}" },
+            "url": { "raw": "{{base_url}}/api/schedules/{{schedule_id}}", "host": ["{{base_url}}"], "path": ["api", "schedules", "{{schedule_id}}"] }
+          }
+        },
+        {
+          "name": "Approve schedule (Admin)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/api/schedules/{{schedule_id}}/approve", "host": ["{{base_url}}"], "path": ["api", "schedules", "{{schedule_id}}", "approve"] }
+          }
+        },
+        {
+          "name": "Reject schedule (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Date invalide\"\n}" },
+            "url": { "raw": "{{base_url}}/api/schedules/{{schedule_id}}/reject", "host": ["{{base_url}}"], "path": ["api", "schedules", "{{schedule_id}}", "reject"] }
+          }
+        },
+        {
+          "name": "Delete schedule",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/schedules/{{schedule_id}}", "host": ["{{base_url}}"], "path": ["api", "schedules", "{{schedule_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Centers (Centres de recherche)",
+      "item": [
+        {
+          "name": "List public centers",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/centers", "host": ["{{base_url}}"], "path": ["api", "centers"] }
+          }
+        },
+        {
+          "name": "Get center by slug",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/centers/slug/credda", "host": ["{{base_url}}"], "path": ["api", "centers", "slug", "credda"] }
+          }
+        },
+        {
+          "name": "Admin list centers",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/centers/admin", "host": ["{{base_url}}"], "path": ["api", "centers", "admin"] }
+          }
+        },
+        {
+          "name": "Create center",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('center_id', pm.response.json().item.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Nouveau Centre\",\n  \"description\": \"Description courte du centre.\",\n  \"profile\": \"<p>Profil détaillé en HTML.</p>\",\n  \"coverImage\": \"\",\n  \"images\": [],\n  \"direction\": {\n    \"name\": \"Dr. Jean Dupont\",\n    \"role\": \"Directeur\",\n    \"slug\": \"dr-jean-dupont\",\n    \"email\": [\"jean@ulpgl.net\"],\n    \"phone\": [\"+243 999 999 999\"]\n  },\n  \"domaineInterventions\": [\"Recherche\", \"Formation\"],\n  \"etudesRealisees\": [\"Étude 2024 sur X\"],\n  \"partenaires\": [\"UNESCO\", \"UE\"],\n  \"contacts\": [\"+243 999 999 999\", \"www.example.org\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/centers", "host": ["{{base_url}}"], "path": ["api", "centers"] }
+          }
+        },
+        {
+          "name": "Update center",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Description mise à jour\",\n  \"domaineInterventions\": [\"Recherche\", \"Formation\", \"Innovation\"]\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/centers/{{center_id}}", "host": ["{{base_url}}"], "path": ["api", "centers", "{{center_id}}"] }
+          }
+        },
+        {
+          "name": "Approve center (Admin)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/api/centers/{{center_id}}/approve", "host": ["{{base_url}}"], "path": ["api", "centers", "{{center_id}}", "approve"] }
+          }
+        },
+        {
+          "name": "Reject center (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Informations incomplètes\"\n}" },
+            "url": { "raw": "{{base_url}}/api/centers/{{center_id}}/reject", "host": ["{{base_url}}"], "path": ["api", "centers", "{{center_id}}", "reject"] }
+          }
+        },
+        {
+          "name": "Delete center",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/centers/{{center_id}}", "host": ["{{base_url}}"], "path": ["api", "centers", "{{center_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Unified search",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/search?q=ulpgl",
+              "host": ["{{base_url}}"],
+              "path": ["api", "search"],
+              "query": [{ "key": "q", "value": "ulpgl", "description": "Recherche dans contents, faculties, filieres" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Newsletter",
+      "item": [
+        {
+          "name": "Subscribe (public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"abonne@example.com\"\n}" },
+            "url": { "raw": "{{base_url}}/api/newsletter", "host": ["{{base_url}}"], "path": ["api", "newsletter"] }
+          }
+        },
+        {
+          "name": "List subscribers (Admin)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/newsletter", "host": ["{{base_url}}"], "path": ["api", "newsletter"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "item": [
+        {
+          "name": "Send message (public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Visiteur ULPGL\",\n  \"email\": \"visiteur@example.com\",\n  \"subject\": \"Demande d'information\",\n  \"message\": \"Bonjour,\\n\\nJe souhaiterais en savoir plus sur les programmes...\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/contact", "host": ["{{base_url}}"], "path": ["api", "contact"] }
+          }
+        },
+        {
+          "name": "List messages (Admin)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/contact", "host": ["{{base_url}}"], "path": ["api", "contact"] }
+          }
+        },
+        {
+          "name": "Delete message (Admin)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/contact/1", "host": ["{{base_url}}"], "path": ["api", "contact", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & Users",
+      "item": [
+        {
+          "name": "Dashboard stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/dashboard/stats", "host": ["{{base_url}}"], "path": ["api", "dashboard", "stats"] },
+            "description": "Renvoie `{ total, pending, published, rejected, newsletters, messages, schedulesTotal, schedulesPending }`.\nPublishers ne voient que leurs propres données. Admin voit tout."
+          }
+        },
+        {
+          "name": "List users (Admin)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/users", "host": ["{{base_url}}"], "path": ["api", "users"] }
+          }
+        },
+        {
+          "name": "Update user (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Nom mis à jour\",\n  \"role\": \"faculty_publisher\",\n  \"facultyId\": 2,\n  \"isActive\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/users/2", "host": ["{{base_url}}"], "path": ["api", "users", "2"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cloudinary",
+      "item": [
+        {
+          "name": "Config",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/cloudinary/config", "host": ["{{base_url}}"], "path": ["api", "cloudinary", "config"] }
+          }
+        },
+        {
+          "name": "Get signed upload params",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/cloudinary/signature?folder=ulpgl/articles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cloudinary", "signature"],
+              "query": [{ "key": "folder", "value": "ulpgl/articles", "description": "ulpgl/articles | ulpgl/events | ulpgl/activities | ulpgl/avatars | ulpgl/uploads" }]
+            },
+            "description": "Renvoie 503 si CLOUDINARY_* non configuré."
+          }
+        }
+      ]
+    }
+  ]
+}
