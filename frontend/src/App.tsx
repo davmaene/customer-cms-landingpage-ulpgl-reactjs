@@ -37,8 +37,7 @@ import { AdminLayout } from "./components/AdminLayout";
 import { AdminDashboard } from "./pages/AdminDashboard";
 
 const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div
-    data-rsssl="1"
+  <div data-rsssl="1"
     className="home wp-singular page-template page-template-no-title page page-id-11 wp-custom-logo wp-embed-responsive wp-theme-edublock-pro tribe-js"
   >
     <SkipToContent />

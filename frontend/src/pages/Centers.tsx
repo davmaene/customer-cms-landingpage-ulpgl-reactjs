@@ -7,8 +7,6 @@ import { ExploreCenters } from '../components/Centers.component';
 
 const LuChevronRightIcon = LuChevronRight as any;
 
-// Dntic@1985
-
 export const Centers: React.FC = () => {
 
     return (
