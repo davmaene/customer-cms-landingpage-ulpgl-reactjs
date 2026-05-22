@@ -24,7 +24,7 @@ export const ContactSection: React.FC = () => {
       toast.success("Message envoyé avec succès");
       setForm({ name: "", email: "", subject: "", message: "" });
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Erreur d'envoi");
+      toast.error(err?.response?.data?.reason || err?.messageText || "Erreur d'envoi");
     } finally {
       setLoading(false);
     }

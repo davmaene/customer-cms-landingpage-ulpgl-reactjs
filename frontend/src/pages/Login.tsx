@@ -24,7 +24,7 @@ export const Login: React.FC = () => {
       toast.success("Connexion réussie");
       navigate(routes.ADMIN);
     } catch (err: any) {
-      const msg = err?.response?.data?.message || "Identifiants invalides";
+      const msg = err?.response?.data?.reason || err?.messageText || "Identifiants invalides";
       setError(msg);
       toast.error(msg);
     } finally {

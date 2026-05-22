@@ -26,7 +26,7 @@ export const FacultyDetail: React.FC = () => {
       .then(async (d) => {
         setFaculty(d.item);
         const list = await apiGet("/contents", { facultyId: d.item.id, limit: 6 });
-        setContents(list.items);
+        setContents(list.rows);
       })
       .finally(() => setLoading(false));
   }, [slug]);

@@ -22,7 +22,7 @@ export const Center: React.FC = () => {
             .then((d) => setItem(d.item))
             .catch(() => setItem(null));
         apiGet(`/centers`)
-            .then((d) => setOtherCenters((d.items || []).filter((c: any) => c.slug !== center)))
+            .then((d) => setOtherCenters((d.rows || []).filter((c: any) => c.slug !== center)))
             .catch(() => {});
     }, [center]);
 

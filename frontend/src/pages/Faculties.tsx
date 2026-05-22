@@ -12,7 +12,7 @@ export const Faculties: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiGet("/faculties").then((d) => setFaculties(d.items)).finally(() => setLoading(false));
+    apiGet("/faculties").then((d) => setFaculties(d.rows)).finally(() => setLoading(false));
   }, []);
 
   return (

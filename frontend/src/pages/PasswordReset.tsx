@@ -22,7 +22,7 @@ export const ForgotPassword: React.FC = () => {
       if (res.devLink) setDevLink(res.devLink);
       toast.success("Si ce compte existe, un email vient d'être envoyé.");
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Erreur serveur");
+      toast.error(err?.response?.data?.reason || err?.messageText || "Erreur serveur");
     } finally {
       setLoading(false);
     }
@@ -116,7 +116,7 @@ export const ResetPassword: React.FC = () => {
       toast.success("Mot de passe réinitialisé. Connectez-vous.");
       navigate(routes.LOGIN);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Lien invalide ou expiré");
+      toast.error(err?.response?.data?.reason || err?.messageText || "Lien invalide ou expiré");
     } finally {
       setLoading(false);
     }
