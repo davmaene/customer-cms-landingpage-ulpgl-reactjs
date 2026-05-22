@@ -394,3 +394,182 @@ class TestRegister:
         r = session.post(f"{API}/auth/register", json={"email": "x@x.com"}, headers=H(admin_token))
         assert r.status_code == 400
 
+
+# ---------- Iteration 3: forgot/reset password ----------
+class TestPasswordReset:
+    def test_forgot_password_valid_email_returns_devlink(self, session):
+        r = session.post(f"{API}/auth/forgot-password", json={"email": ADMIN["email"]})
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data.get("ok") is True
+        # SendGrid skipped -> devLink should be present
+        assert "devLink" in data and "/reset-password?token=" in data["devLink"]
+
+    def test_forgot_password_unknown_email_no_leak(self, session):
+        r = session.post(f"{API}/auth/forgot-password", json={"email": f"nope_{int(time.time())}@nowhere.tld"})
+        assert r.status_code == 200
+        data = r.json()
+        assert data.get("ok") is True
+        # No devLink for unknown user (no token created)
+        assert "devLink" not in data or data.get("devLink") is None
+
+    def test_forgot_password_missing_email(self, session):
+        r = session.post(f"{API}/auth/forgot-password", json={})
+        assert r.status_code == 400
+
+    def test_reset_password_full_flow(self, session):
+        # Create a temp user via admin
+        admin_r = session.post(f"{API}/auth/login", json=ADMIN)
+        admin_tok = admin_r.json()["token"]
+        fid = session.get(f"{API}/faculties").json()["items"][0]["id"]
+        ts = int(time.time())
+        email = f"TEST_pwreset_{ts}@example.com"
+        old_pw = "OldPw@2026"
+        new_pw = "NewPw@2026"
+        rc = session.post(f"{API}/auth/register", json={
+            "name": "PwReset User", "email": email, "password": old_pw,
+            "role": "faculty_publisher", "facultyId": fid,
+        }, headers=H(admin_tok))
+        assert rc.status_code == 201, rc.text
+
+        # Request forgot-password
+        rf = session.post(f"{API}/auth/forgot-password", json={"email": email})
+        assert rf.status_code == 200
+        dev_link = rf.json().get("devLink")
+        assert dev_link, "devLink should be present in SKIP mode"
+        token = dev_link.split("token=")[-1]
+        assert token and len(token) >= 32
+
+        # Reset password
+        rr = session.post(f"{API}/auth/reset-password", json={"token": token, "password": new_pw})
+        assert rr.status_code == 200, rr.text
+        assert rr.json().get("ok") is True
+
+        # Login with new password
+        rl = session.post(f"{API}/auth/login", json={"email": email, "password": new_pw})
+        assert rl.status_code == 200, rl.text
+        # Old password should no longer work
+        rl_old = session.post(f"{API}/auth/login", json={"email": email, "password": old_pw})
+        assert rl_old.status_code == 401
+
+        # Re-using the same token must fail
+        rr2 = session.post(f"{API}/auth/reset-password", json={"token": token, "password": "ThirdPw@2026"})
+        assert rr2.status_code == 400
+
+    def test_reset_password_invalid_token(self, session):
+        r = session.post(f"{API}/auth/reset-password", json={"token": "deadbeef" * 8, "password": "Whatever1!"})
+        assert r.status_code == 400
+
+    def test_reset_password_too_short(self, session):
+        r = session.post(f"{API}/auth/reset-password", json={"token": "x" * 64, "password": "abc"})
+        assert r.status_code == 400
+
+
+# ---------- Iteration 3: schedules ----------
+class TestSchedules:
+    def _faculty_id(self, session):
+        return session.get(f"{API}/faculties").json()["items"][0]["id"]
+
+    def test_public_list_published_only(self, session):
+        r = session.get(f"{API}/schedules")
+        assert r.status_code == 200
+        items = r.json()["items"]
+        assert isinstance(items, list)
+        for it in items:
+            assert it["status"] == "published"
+
+    def test_admin_creates_published(self, session, admin_token):
+        fid = self._faculty_id(session)
+        ts = int(time.time())
+        payload = {
+            "type": "cours", "title": f"TEST_Sched_Admin_{ts}",
+            "promotion": "L1", "academicYear": "2025-2026", "semester": "S1",
+            "facultyId": fid, "description": "Created by admin",
+        }
+        r = session.post(f"{API}/schedules", json=payload, headers=H(admin_token))
+        assert r.status_code == 201, r.text
+        item = r.json()["item"]
+        assert item["status"] == "published"
+        assert item["type"] == "cours"
+        assert item["promotion"] == "L1"
+        # Visible in public listing
+        r2 = session.get(f"{API}/schedules", params={"type": "cours", "promotion": "L1"})
+        ids = [s["id"] for s in r2.json()["items"]]
+        assert item["id"] in ids
+
+    def test_publisher_creates_pending(self, session, publisher_token):
+        ts = int(time.time())
+        payload = {
+            "type": "examen", "title": f"TEST_Sched_Pub_{ts}",
+            "promotion": "L2", "academicYear": "2025-2026", "semester": "S2",
+            "description": "From publisher",
+        }
+        r = session.post(f"{API}/schedules", json=payload, headers=H(publisher_token))
+        assert r.status_code == 201, r.text
+        item = r.json()["item"]
+        assert item["status"] == "pending"
+        # Should NOT appear in public list yet
+        r2 = session.get(f"{API}/schedules")
+        assert item["id"] not in [s["id"] for s in r2.json()["items"]]
+        return item["id"]
+
+    def test_approve_workflow(self, session, publisher_token, admin_token):
+        sid = self.test_publisher_creates_pending(session, publisher_token)
+        r = session.post(f"{API}/schedules/{sid}/approve", headers=H(admin_token))
+        assert r.status_code == 200
+        assert r.json()["item"]["status"] == "published"
+
+    def test_reject_workflow(self, session, publisher_token, admin_token):
+        sid = self.test_publisher_creates_pending(session, publisher_token)
+        r = session.post(f"{API}/schedules/{sid}/reject", json={"reason": "Date erronée"}, headers=H(admin_token))
+        assert r.status_code == 200
+        item = r.json()["item"]
+        assert item["status"] == "rejected"
+        assert item["rejectionReason"] == "Date erronée"
+
+    def test_filter_by_type_and_promotion(self, session, admin_token):
+        fid = self._faculty_id(session)
+        ts = int(time.time())
+        # create cours L1
+        session.post(f"{API}/schedules", json={
+            "type": "cours", "title": f"TEST_Filt_Cours_{ts}", "promotion": "L1",
+            "facultyId": fid, "academicYear": "2025-2026",
+        }, headers=H(admin_token))
+        # create examen L3
+        session.post(f"{API}/schedules", json={
+            "type": "examen", "title": f"TEST_Filt_Exam_{ts}", "promotion": "L3",
+            "facultyId": fid, "academicYear": "2025-2026",
+        }, headers=H(admin_token))
+        r = session.get(f"{API}/schedules", params={"type": "examen", "promotion": "L3", "facultyId": fid})
+        assert r.status_code == 200
+        for it in r.json()["items"]:
+            assert it["type"] == "examen"
+            assert it["promotion"] == "L3"
+            assert it["facultyId"] == fid
+
+    def test_publisher_cannot_approve(self, session, publisher_token):
+        sid = self.test_publisher_creates_pending(session, publisher_token)
+        r = session.post(f"{API}/schedules/{sid}/approve", headers=H(publisher_token))
+        assert r.status_code == 403
+
+    def test_create_requires_auth(self, session):
+        r = session.post(f"{API}/schedules", json={"type": "cours", "title": "x", "promotion": "L1"})
+        assert r.status_code == 401
+
+    def test_create_invalid_type(self, session, admin_token):
+        fid = self._faculty_id(session)
+        r = session.post(f"{API}/schedules", json={
+            "type": "tp", "title": "Bad", "promotion": "L1", "facultyId": fid,
+        }, headers=H(admin_token))
+        assert r.status_code == 400
+
+
+# ---------- Iteration 3: dashboard stats include schedules ----------
+class TestDashboardSchedules:
+    def test_stats_include_schedule_counts(self, session, admin_token):
+        r = session.get(f"{API}/dashboard/stats", headers=H(admin_token))
+        assert r.status_code == 200
+        d = r.json()
+        assert "schedulesTotal" in d and isinstance(d["schedulesTotal"], int)
+        assert "schedulesPending" in d and isinstance(d["schedulesPending"], int)
+

@@ -1,0 +1,45 @@
+{
+  "summary": "Iteration 3 testing of ULPGL — 4 new features: (1) Forgot/Reset password (SendGrid SKIP → devLink), (2) Dashboard dedicated layout on /app/admin (AdminLayout sidebar, no public Header/Footer), (3) Mobile TopNavigation (Bibliothèque/Metanoia/Kauta/Crèche), (4) Schedules CRUD + workflow + public page with filters. Backend pytest suite expanded 39 → 55 tests, ALL 55 PASS (100%). Frontend Playwright validated end-to-end: forgot-password-link on /login → /forgot-password → submit shows devLink containing /reset-password?token= ; admin login redirects to /app/admin ; admin-layout & admin-sidebar render with all 9 nav links (Vue d'ensemble / Articles / Événements / Activités / Horaires / À valider / Newsletter / Messages / Utilisateurs) and stats include HORAIRES card ; sidebar /schedules tab → new-schedule-button → schedule-modal with type/promotion/title/faculty/file-dropzone → schedule-save-button creates and lists schedule ; public /app/horaires shows schedules-filters and the newly-created schedule ; mobile (390px) TopNavigation links topnav-bibliotheque/metanoia/kauta/creche all present & visible. No regression on existing flows.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/auth/forgot-password", "issue": "SendGrid skipped (no key) — devLink returned in JSON body. EXPECTED behaviour given iteration mocked-API note."},
+      {"endpoint": "/api/cloudinary/signature", "issue": "503 because Cloudinary keys not provided — EXPECTED."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Header on /accueil", "issues": ["When the auth context is still loading (initial paint shows 'Chargement en cours…'), the header-dashboard-link is not yet in DOM. Once the context restores the user it appears with href=/app/admin as expected. Not a bug, but consider rendering a skeleton in the header to avoid layout shift."]},
+      {"screen": "AdminLayout sidebar (Home rendering)", "issues": ["React hydration warning: '<hr> cannot be a descendant of <p>' triggered by Hrseparator inside <p> on Home hero section. Pre-existing from earlier iterations, unrelated to iteration 3 but worth fixing in HeroSection."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_ulpgl_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Cosmetic) AdminLayout data-testid for sidebar nav uses leading-slash from it.to (e.g. data-testid=\"admin-nav-/articles\"). Works but unusual — recommend stripping the slash, e.g. `admin-nav-${(it.to || \"overview\").replace(/^\\//, \"\")}` so tests can use clean ids (admin-nav-articles, admin-nav-schedules, …).",
+    "(Cosmetic) Strip <hr> outside of <p> inside HeroSection (Home) to remove React hydration warning.",
+    "Optional: when SendGrid key is supplied, hide the dev-link box in PasswordReset UI (currently relies on devLink absence which is already correct)."
+  ],
+  "critical_code_review_comments": [
+    "routes/auth.js forgot-password correctly: (a) always returns ok=true regardless of email existence (no leak), (b) generates 32-byte hex token + 1h expiry stored in PasswordResetToken, (c) returns devLink only when mailer is skipped. reset-password validates token + expiresAt + usedAt + min 6 chars and marks token usedAt after success — prevents replay (verified by automated test).",
+    "routes/schedules.js correctly auto-sets status=published for super_admin and status=pending for faculty_publisher; publishers cannot approve (403); public GET filters by status=published only and supports type/facultyId/promotion/academicYear query params.",
+    "AdminLayout properly redirects to /login when no user, and renders without the public Header/Footer (confirmed visually). Stats include schedulesTotal/schedulesPending and the Horaires card is shown.",
+    "Mobile TopNavigation rewrite: at 390px width, all 4 brand links (topnav-bibliotheque/metanoia/kauta/creche) are visible, scrollable horizontally. Good fix.",
+    "Code quality: AdminLayout data-testid uses raw nav-item path including leading slash — produces ids like `admin-nav-/articles`. Functional but breaks intuitive selector convention.",
+    "Models: PasswordResetToken correctly indexes on `token`. Schedule model has facultyId/filiereId/promotion/academicYear/semester fields with proper FK to Faculty/Filiere/User."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_ulpgl_backend.py (added TestPasswordReset 6 tests, TestSchedules 9 tests, TestDashboardSchedules 1 test → 55 total)"
+  ],
+  "success_rate": {"backend": "100% (55/55)", "frontend": "100% (all critical iteration-3 flows)"},
+  "test_credentials": "admin@ulpgl.net / Admin@2026 | publisher@ulpgl.net / Publisher@2026",
+  "seed_data_creation": "Tests create TEST_-prefixed schedules, users (publisher), and password reset flows. Seed contains 6 facultés + 1 admin + 1 publisher + 3 sample contents and now seeds remain unchanged for schedules (none in seed, all created during tests).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest now covers 55 cases including iteration 3 features (forgot/reset password full flow with token replay protection, schedule CRUD + publish/approve/reject workflow, role-based status assignment, public filtering, dashboard schedule counts). Frontend data-testids verified: forgot-password-link, forgot-password-page, reset-password-page, admin-layout, admin-sidebar, admin-nav-{overview|/articles|/events|/activities|/schedules|/pending|/newsletter|/messages|/users} (note leading slash for non-overview entries), new-schedule-button, schedule-modal, schedule-type, schedule-title, schedule-promotion, schedule-faculty, schedule-file-dropzone/file-input, schedule-save-button, schedules-filters, topnav-bibliotheque/metanoia/kauta/creche. SendGrid + Cloudinary remain SKIP/503 (expected).",
+  "rca of the issue": "N/A — no bugs to RCA. Initial Playwright run had false-negative on sidebar nav selectors due to leading slash in data-testid; once selectors aligned (admin-nav-/schedules etc.), the entire schedule flow passed."
+}

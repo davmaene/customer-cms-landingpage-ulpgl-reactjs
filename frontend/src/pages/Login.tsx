@@ -22,7 +22,7 @@ export const Login: React.FC = () => {
     try {
       await login(email, password);
       toast.success("Connexion réussie");
-      navigate(routes.DASHBOARD);
+      navigate(routes.ADMIN);
     } catch (err: any) {
       const msg = err?.response?.data?.message || "Identifiants invalides";
       setError(msg);
