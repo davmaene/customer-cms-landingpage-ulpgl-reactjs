@@ -1,6 +1,6 @@
 # ULPGL-Goma — Landing Page + CMS (PRD)
 
-**Dernière mise à jour :** 22 Mai 2026 (itération 3)
+**Dernière mise à jour :** 22 Mai 2026 (itération 4)
 
 ## Énoncé original
 > "voici un landing page, je voudrais que tu optimise les menus sur mobile et tablette, proposes les pages qui manquent entre autre les pages des facultés et domaines, implémente la recherche qui peut être un événement, une activité, une fac, une filière, ... puis ajoute un petit dashboard qui va me permettre de publier les articles, les événements, activités... crée deux groupes d'utilisateurs (publieur faculté + super-admin valideur). Newsletter, form contact côté front et backend en NodeJS-Express, Sequelize, MySQL."
@@ -64,6 +64,22 @@
 - **Dashboard sur layout dédié** — Route `/app/admin` avec `AdminLayout` (sidebar permanente à gauche + topbar minimaliste) **sans le Header/Footer du site public**. Sidebar responsive (drawer < 992px). `AdminDashboard` est désormais route-driven (`/app/admin`, `/app/admin/articles`, `/app/admin/schedules`, etc.). Lien "Voir le site" dans la sidebar pour retourner à la home.
 - **TopNavigation mobile fonctionnelle** — Réécriture en simple `<ul>` flexbox (Bibliothèque / Metanoia / Kauta / Crèche). Sur mobile (<768px), liens en scroll horizontal lisses, scroll tactile activé.
 - **Horaires cours & examens** — Nouveau modèle `Schedule` (type cours/examen, faculté, filière, promotion L1/L2/L3/M1/M2, année académique, semestre, dates début/fin, lieu, fichier joint via Cloudinary, description). CRUD `/api/schedules` avec workflow de validation (publisher → pending, admin → published, approve/reject). Onglet *Horaires* dans le dashboard. **Page publique** `/app/horaires` avec 3 filtres (type / faculté / promotion) et cartes détaillées avec téléchargement du document.
+
+### ✅ Phase 4 — Itération 4 (22 Mai 2026)
+- **Tout chargé depuis l'API** (plus de données statiques côté React) :
+  - Section "Articles et dernières nouvelles" de la **home** → `GET /api/contents?limit=3`
+  - Page publique **Articles** → API + **filtre par faculté** (sélecteur avec "Toutes les facultés" par défaut)
+  - Page **Centres** + détail d'un centre → API (`/api/centers`, `/api/centers/slug/:slug`)
+- **Centres de recherche — CRUD complet** (modèle calqué sur CREDDA) :
+  - Champs : `title`, `slug`, `description`, `profile` (HTML), `coverImage`, `images[]`, `direction{name, role, email[], phone[]}`, `domaineInterventions[]`, `etudesRealisees[]`, `partenaires[]`, `contacts[]`
+  - Stockage : colonnes TEXT en MariaDB + helpers `serializeCenter`/`deserializeCenter` pour gérer les arrays/objects en JSON
+  - Workflow : publisher → pending, super-admin → published direct, approve/reject
+  - Onglet **Centres** dans le dashboard admin (sidebar) avec modal complet incluant RichEditor pour le profil
+  - 3 centres seedés : CREDDA, CRIPE, BERSAC
+- **Layout des pages auth nettoyé** :
+  - `/login`, `/forgot-password`, `/reset-password` sont désormais des pages **bare full-screen** (fond bleu dégradé)
+  - PAS de Header/Footer du site public — clarifie le contexte "espace admin"
+  - PAS de sidebar AdminLayout puisque l'utilisateur n'est pas encore connecté
 
 ### Tests
 - Backend : 30 tests pytest, **100% passants**
