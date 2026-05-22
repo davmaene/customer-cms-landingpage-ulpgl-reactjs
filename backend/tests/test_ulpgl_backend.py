@@ -573,3 +573,139 @@ class TestDashboardSchedules:
         assert "schedulesTotal" in d and isinstance(d["schedulesTotal"], int)
         assert "schedulesPending" in d and isinstance(d["schedulesPending"], int)
 
+
+# ---------- Iteration 4: centers ----------
+class TestCenters:
+    def test_public_list_centers(self, session):
+        r = session.get(f"{API}/centers")
+        assert r.status_code == 200
+        items = r.json()["items"]
+        assert isinstance(items, list)
+        assert len(items) >= 1, "seed should create centers (credda/cripe/bersac)"
+        slugs = [c.get("slug") for c in items]
+        assert "credda" in slugs
+        # JSON fields must be deserialized to arrays/objects (not strings)
+        for c in items:
+            assert isinstance(c.get("domaineInterventions"), list)
+            assert isinstance(c.get("partenaires"), list)
+            assert isinstance(c.get("contacts"), list)
+            assert isinstance(c.get("etudesRealisees"), list)
+            if c.get("direction") is not None:
+                assert isinstance(c["direction"], dict)
+
+    def test_get_center_credda_by_slug(self, session):
+        r = session.get(f"{API}/centers/slug/credda")
+        assert r.status_code == 200
+        item = r.json()["item"]
+        assert item["slug"] == "credda"
+        # Direction is fully parsed
+        d = item.get("direction")
+        assert isinstance(d, dict)
+        assert d.get("name") == "Prof. Dr. Kennedy Kihangi Bindu"
+        # email/phone are arrays
+        assert isinstance(d.get("email", []), list)
+        assert isinstance(d.get("phone", []), list)
+        assert isinstance(item.get("partenaires"), list)
+        assert isinstance(item.get("contacts"), list)
+
+    def test_get_center_unknown_slug_404(self, session):
+        r = session.get(f"{API}/centers/slug/does-not-exist-xyz")
+        assert r.status_code == 404
+
+    def test_admin_creates_published_center(self, session, admin_token):
+        ts = int(time.time())
+        payload = {
+            "title": f"TEST_Center_Admin_{ts}",
+            "description": "Description du centre admin",
+            "profile": "<p>Profile HTML</p>",
+            "coverImage": "https://example.com/img.jpg",
+            "direction": {"name": "Dr Test", "role": "Directeur", "email": ["d@x.com"], "phone": ["+243000"]},
+            "domaineInterventions": ["Recherche", "Formation"],
+            "etudesRealisees": [{"title": "Étude 1", "year": "2024"}],
+            "partenaires": ["UE", "USAID"],
+            "contacts": [{"label": "Bureau", "value": "Goma"}],
+            "images": ["https://example.com/a.jpg"],
+        }
+        r = session.post(f"{API}/centers", json=payload, headers=H(admin_token))
+        assert r.status_code == 201, r.text
+        item = r.json()["item"]
+        assert item["status"] == "published"
+        assert item["publishedAt"] is not None
+        assert isinstance(item["domaineInterventions"], list) and "Recherche" in item["domaineInterventions"]
+        assert isinstance(item["partenaires"], list) and "UE" in item["partenaires"]
+        assert item["direction"]["name"] == "Dr Test"
+        # Verify visible publicly
+        r2 = session.get(f"{API}/centers/slug/{item['slug']}")
+        assert r2.status_code == 200
+        return item["id"], item["slug"]
+
+    def test_publisher_creates_pending_center(self, session, publisher_token):
+        ts = int(time.time())
+        payload = {
+            "title": f"TEST_Center_Pub_{ts}",
+            "description": "Centre publisher",
+            "domaineInterventions": ["Test"],
+        }
+        r = session.post(f"{API}/centers", json=payload, headers=H(publisher_token))
+        assert r.status_code == 201, r.text
+        item = r.json()["item"]
+        assert item["status"] == "pending"
+        # Not in public list yet
+        r2 = session.get(f"{API}/centers")
+        assert item["id"] not in [c["id"] for c in r2.json()["items"]]
+        return item["id"]
+
+    def test_admin_updates_center_all_fields(self, session, admin_token):
+        cid, _ = self.test_admin_creates_published_center(session, admin_token)
+        update = {
+            "title": f"TEST_Updated_{int(time.time())}",
+            "description": "Updated description",
+            "domaineInterventions": ["NouveauDomaine"],
+            "partenaires": ["NewPartner"],
+            "direction": {"name": "Updated Director", "role": "DG", "email": ["new@x.com"], "phone": []},
+            "contacts": [{"label": "Tel", "value": "+243111"}],
+            "etudesRealisees": [],
+        }
+        r = session.put(f"{API}/centers/{cid}", json=update, headers=H(admin_token))
+        assert r.status_code == 200, r.text
+        item = r.json()["item"]
+        assert item["description"] == "Updated description"
+        assert item["domaineInterventions"] == ["NouveauDomaine"]
+        assert item["partenaires"] == ["NewPartner"]
+        assert item["direction"]["name"] == "Updated Director"
+        assert item["contacts"][0]["value"] == "+243111"
+
+    def test_admin_approve_center(self, session, publisher_token, admin_token):
+        cid = self.test_publisher_creates_pending_center(session, publisher_token)
+        r = session.post(f"{API}/centers/{cid}/approve", headers=H(admin_token))
+        assert r.status_code == 200
+        assert r.json()["item"]["status"] == "published"
+
+    def test_admin_reject_center(self, session, publisher_token, admin_token):
+        cid = self.test_publisher_creates_pending_center(session, publisher_token)
+        r = session.post(f"{API}/centers/{cid}/reject", json={"reason": "Hors périmètre"}, headers=H(admin_token))
+        assert r.status_code == 200
+        item = r.json()["item"]
+        assert item["status"] == "rejected"
+        assert item["rejectionReason"] == "Hors périmètre"
+
+    def test_publisher_admin_list_filtered_by_author(self, session, publisher_token):
+        # Create a pending one as publisher then list admin should only return own items
+        self.test_publisher_creates_pending_center(session, publisher_token)
+        r = session.get(f"{API}/centers/admin", headers=H(publisher_token))
+        assert r.status_code == 200
+        items = r.json()["items"]
+        # all returned items should belong to publisher (authorId is publisher's id)
+        # publisher's email
+        me = session.get(f"{API}/auth/me", headers=H(publisher_token)).json()["user"]
+        for it in items:
+            assert it.get("authorId") == me["id"]
+
+    def test_create_center_requires_auth(self, session):
+        r = session.post(f"{API}/centers", json={"title": "x", "description": "y"})
+        assert r.status_code == 401
+
+    def test_create_center_missing_fields(self, session, admin_token):
+        r = session.post(f"{API}/centers", json={"title": "  "}, headers=H(admin_token))
+        assert r.status_code == 400
+

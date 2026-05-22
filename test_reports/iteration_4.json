@@ -1,0 +1,45 @@
+{
+  "summary": "Iteration 4 — Centers CRUD + Home/Articles/Centers loaded from API + Login bare layout. Backend pytest expanded 55 → 66 tests (added 11 TestCenters cases), ALL 66 PASS (100%). Frontend Playwright validated: /login & /forgot-password render WITHOUT public Header/Footer (bare blue-background layout); admin login → /app/admin → admin-nav-centers → new-center-button opens center-modal; creating a center via center-save-button persists and appears in the dashboard list; public /app/centres shows centers-grid with credda; /app/centres/credda renders 'Prof. Dr. Kennedy Kihangi Bindu' + partenaires + contacts from API; /app/articles shows articles-filter-bar with articles-filter-faculty defaulting to 'all', 7 options listed, changing faculty updates query; home-articles section present on home page. JSON fields (domaineInterventions, partenaires, contacts, etudesRealisees, direction.email/phone) are correctly deserialized to arrays/objects by the backend.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/cloudinary/signature", "issue": "503 because keys not configured — EXPECTED (mocked)."},
+      {"endpoint": "/api/auth/forgot-password", "issue": "SendGrid skipped, devLink returned — EXPECTED (mocked)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "AdminDashboard – center modal", "issues": ["The center modal renders all required fields (cover image dropzone, Direction name/role/email/phone, Domaines/Études/Partenaires/Contacts textareas, Profile RichEditor) but only center-title, center-description and center-save-button expose data-testid attributes. Per the spec, individual field data-testids would improve testability (e.g. center-cover-image, center-direction-name, center-direction-role, center-direction-email, center-direction-phone, center-domaines, center-etudes, center-partenaires, center-contacts, center-profile)."]},
+      {"screen": "Routing note", "issues": ["The review request mentions /app/blog-and-articles but the actual route is /app/articles (utils.routes.ts → ARTICLES = '/app/articles'). The /app/articles page DOES expose articles-filter-bar + articles-filter-faculty correctly. Likely a typo in the problem statement; not a code bug."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_ulpgl_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Cosmetic / testability) Add data-testid attributes on the individual fields of the center modal (center-cover-image, center-direction-name/role/email/phone, center-domaines, center-etudes, center-partenaires, center-contacts, center-profile) to enable targeted Playwright assertions. The functionality is correct; only granular testing is impacted.",
+    "(Doc only) Note that the public Articles route is /app/articles, not /app/blog-and-articles — update the problem statement accordingly."
+  ],
+  "critical_code_review_comments": [
+    "routes/centers.js cleanly separates publish/pending status by role (super_admin → published with publishedAt; faculty_publisher → pending) and uses serializeCenter/deserializeCenter to round-trip JSON columns. Admin-list endpoint correctly scopes by authorId for publishers.",
+    "PUT /api/centers/:id correctly updates both scalar fields (title/description/profile/coverImage) and JSON inputs (images, direction, domaineInterventions, etudesRealisees, partenaires, contacts) via JSON.stringify; deserializeCenter on the response returns properly parsed arrays/objects (verified by automated test).",
+    "GET /api/centers and /api/centers/slug/:slug return public published-only items; 404 on unknown slug is correct.",
+    "App.tsx: Login/ForgotPassword/ResetPassword routes are correctly defined OUTSIDE of the PublicLayout block — verified visually: no Header/Footer on /login or /forgot-password (bare blue-background full-height layout).",
+    "Login.tsx uses data-testid=\"login-email-input\" and \"login-password-input\" (note: not \"login-email\" / \"login-password\" as one might assume). forgot-password-link works and navigates to /forgot-password.",
+    "Code quality: AdminDashboard still uses leading-slash data-testids for some sidebar items (admin-nav-/articles etc.) but the new admin-nav-centers (without slash) works — recommend normalising across all sidebar links in a future iteration.",
+    "Seed: utils/seed.js correctly creates 3 centers (credda, cripe, bersac) with direction including Prof. Dr. Kennedy Kihangi Bindu and JSON arrays for partenaires/contacts/etc., all readable via deserializeCenter."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_ulpgl_backend.py (added TestCenters with 11 cases: public list with JSON fields parsed, credda slug detail incl. direction.name, admin POST published, publisher POST pending, admin PUT all fields, admin approve, admin reject, /centers/admin scoped by authorId for publisher, requires auth, missing fields → 400)"
+  ],
+  "success_rate": {"backend": "100% (66/66)", "frontend": "100% (all iteration-4 critical flows)"},
+  "test_credentials": "admin@ulpgl.net / Admin@2026 | publisher@ulpgl.net / Publisher@2026",
+  "seed_data_creation": "Tests create TEST_-prefixed centers (admin & publisher). Seed contains 3 centers (credda, cripe, bersac) — credda used as reference for direction/contacts/partenaires assertions.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest covers 66 cases. New testids verified on frontend: login-page (bare layout, no header/footer), login-email-input, login-password-input, login-submit-button, login-error, forgot-password-link → forgot-password-page (also bare), reset-password-page (also bare). Admin sidebar: admin-nav-centers works (no leading slash, unlike other items). new-center-button, center-modal, center-title, center-description, center-save-button all present. Public: home-articles, centers-grid, articles-filter-bar, articles-filter-faculty (default value=all, options include 'all' + 6 faculties). The Articles route is /app/articles (NOT /app/blog-and-articles — problem statement typo). SendGrid + Cloudinary remain mocked (SKIP / 503).",
+  "rca of the issue": "N/A — no bugs. Initial mis-test on /app/blog-and-articles returned 404 (page non trouvée) because the route is /app/articles; once corrected, all filters and grid behaved as expected. Login form testids are *-input/-button suffixed (login-email-input, login-password-input, login-submit-button) — not the bare names from the problem statement."
+}

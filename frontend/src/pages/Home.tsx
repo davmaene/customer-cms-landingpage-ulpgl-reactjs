@@ -169,6 +169,13 @@ export const Home: React.FC = () => {
 };
 
 const ArticlesSection: React.FC = () => {
+  const [items, setItems] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    import("../utils/api").then(({ apiGet }) =>
+      apiGet("/contents", { limit: 3 }).then((d) => setItems(d.items || [])).catch(() => setItems([]))
+    );
+  }, []);
+
   return (
     <div id="articles" className="wp-block-group has-global-padding is-layout-constrained wp-block-group-is-layout-constrained is-layout-container">
       <div className="wp-block-group is-layout-flow wp-block-group-is-layout-flow">
@@ -188,26 +195,26 @@ const ArticlesSection: React.FC = () => {
 
         <div style={{ height: '60px' }} aria-hidden="true" className="wp-block-spacer"></div>
 
-        <div className="wp-block-columns is-layout-flex wp-container-core-columns-is-layout-28f844935665 wp-block-columns-is-layout-flex">
-          {posts.slice(0, 3).map((post, idx) => {
-            const key = randomNumber();
-
-            return (
+        {items.length === 0 ? (
+          <p style={{ color: '#888', textAlign: 'center', padding: 30 }}>Aucun article publié pour le moment.</p>
+        ) : (
+          <div data-testid="home-articles" className="wp-block-columns is-layout-flex wp-container-core-columns-is-layout-28f844935665 wp-block-columns-is-layout-flex">
+            {items.slice(0, 3).map((post) => (
               <ArticleCard
-                key={key}
-                id={893}
-                post_image={post.post_image}
-                post_title={post.post_title}
-                post_excerpt={post.post_excerpt}
-                post_author={post.post_author}
-                post_date={post.post_date}
-                post_content={post.post_content}
-                post_category='Article'
-                post_name={post.post_name}
+                key={post.id}
+                id={post.id}
+                post_image={post.coverImage || heroImage}
+                post_title={post.title}
+                post_excerpt={post.excerpt || ''}
+                post_author={post.author?.name || 'ULPGL'}
+                post_date={post.publishedAt || post.createdAt}
+                post_content={post.content || ''}
+                post_category={post.category || (post.type === 'event' ? 'Événement' : post.type === 'activity' ? 'Activité' : 'Article')}
+                post_name={post.slug}
               />
-            )
-          })}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div style={{ height: '100px' }} aria-hidden="true" className="wp-block-spacer"></div>
       </div>

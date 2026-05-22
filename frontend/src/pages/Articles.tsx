@@ -7,7 +7,6 @@ import { apiGet } from "../utils/api";
 import { Colors } from "../utils/utils.colors";
 import { routes } from "../utils/utils.routes";
 import { LoadingComponent } from "../components/subcomponents/LoadingComponent";
-
 const TYPE_LABELS: any = {
   article: "Articles",
   evenement: "Événements",
@@ -27,16 +26,25 @@ const typeFromParam = (cat?: string) => {
 export const Articles: React.FC = () => {
   const { category } = useParams();
   const [items, setItems] = useState<any[]>([]);
+  const [faculties, setFaculties] = useState<any[]>([]);
+  const [facultyId, setFacultyId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [itemOffset, setItemOffset] = useState(0);
   const itemsPerPage = 9;
 
   useEffect(() => {
+    apiGet("/faculties").then((d) => setFaculties(d.items || [])).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     setLoading(true);
-    apiGet("/contents", { type: typeFromParam(category), limit: 100 })
+    const params: any = { type: typeFromParam(category), limit: 100 };
+    if (facultyId && facultyId !== "all") params.facultyId = facultyId;
+    apiGet("/contents", params)
       .then((d) => setItems(d.items || []))
       .finally(() => setLoading(false));
-  }, [category]);
+    setItemOffset(0);
+  }, [category, facultyId]);
 
   const endOffset = itemOffset + itemsPerPage;
   const currentItems = items.slice(itemOffset, endOffset);
@@ -68,6 +76,20 @@ export const Articles: React.FC = () => {
         </div>
 
         <div style={{ height: "8px" }} aria-hidden="true" className="wp-block-spacer"></div>
+
+        {/* Faculty filter */}
+        <div data-testid="articles-filter-bar" style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 22, padding: 14, background: "white", borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+          <label style={{ fontSize: 14, fontWeight: 500, color: "#444", margin: 0 }}>Filtrer par faculté :</label>
+          <select
+            data-testid="articles-filter-faculty"
+            value={facultyId}
+            onChange={(e) => setFacultyId(e.target.value)}
+            style={{ flex: 1, maxWidth: 360, padding: "8px 12px", border: "1px solid #ddd", borderRadius: 6, background: "white" }}
+          >
+            <option value="all">Toutes les facultés</option>
+            {faculties.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+          </select>
+        </div>
 
         {loading ? (
           <LoadingComponent />

@@ -58,6 +58,7 @@ export const AdminLayout: React.FC = () => {
     { to: "/events", icon: <CalI size={18} />, label: "Événements" },
     { to: "/activities", icon: <ActI size={18} />, label: "Activités" },
     { to: "/schedules", icon: <ClockI size={18} />, label: "Horaires" },
+    { to: "/centers", icon: <ActI size={18} />, label: "Centres" },
     ...(isAdmin
       ? [
           { to: "/pending", icon: <CheckI size={18} />, label: "À valider" },
