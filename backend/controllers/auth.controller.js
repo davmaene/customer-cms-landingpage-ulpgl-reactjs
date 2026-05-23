@@ -15,10 +15,10 @@ exports.login = async (req, res) => {
       where: { email: String(email).toLowerCase().trim() },
       include: [{ model: Faculty, as: 'faculty' }],
     });
-    if (!user) return Response(res, 203, {});
+    if (!user) return Response(res, 403, {});
     if (!user.isActive) return Response(res, 244, {});
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return Response(res, 203, {});
+    if (!valid) return Response(res, 403, {});
     const token = sign(user);
     const safeUser = user.toJSON();
     delete safeUser.password;

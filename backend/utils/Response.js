@@ -18,7 +18,7 @@ const STATUS_MESSAGES = {
   203: 'Login failed credentials are incorrect !',
   244: 'Login failed cause account is not activate',
   404: 'Ressource not found on this server !',
-  403: "You don't have right access to this server ! please check your app and access key",
+  403: "Username or password is incorrect, check them than try again !",
   400: 'Success execution but nothing to render',
   401: 'missing parameter in the request !',
   405: 'Data validation error !',
@@ -39,7 +39,6 @@ const Response = (res, status, body) => {
     });
   }
 
-  // Normaliser le code HTTP renvoyé (les 2 cas particuliers du legacy : 301→403, 204→209)
   const httpStatus = status === 301 ? 403 : status === 204 ? 209 : status;
   const payloadStatus = status === 204 ? 209 : status;
   const messageText = STATUS_MESSAGES[status];
