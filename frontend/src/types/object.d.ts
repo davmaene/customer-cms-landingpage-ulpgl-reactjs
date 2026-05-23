@@ -17,6 +17,14 @@ interface StaffMember {
     socialLinks?: { platform: string; url: string }[];
 }
 
+interface Laureat {
+    numero: number;
+    nom: string;
+    annee: number;
+    option: string;
+    pourcentage: number;
+}
+
 interface Center {
     flug: string;
     title: string;

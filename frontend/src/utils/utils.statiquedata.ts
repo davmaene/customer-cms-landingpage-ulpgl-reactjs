@@ -1038,7 +1038,7 @@ export const laureatsData = {
             { numero: 1102, nom: "BAGUMA ERHAHAMOBA ABED-NEGO", annee: 2019, option: "Commerciale et Administrative", pourcentage: 56 },
             { numero: 1101, nom: "AKIMANA NDUHIRAHE NYOTA", annee: 2019, option: "Commerciale et Administrative", pourcentage: 53 }
         ],
-        20218: [
+        2018: [
             { numero: 1100, nom: "THEY THEY NZANZU LANDRY", annee: 2018, option: "Pédagogie Générale", pourcentage: 61 },
             { numero: 1099, nom: "RIZIKI MAZAMBI PIERRETTE", annee: 2018, option: "Pédagogie Générale", pourcentage: 58 },
             { numero: 1098, nom: "NZANZU VIHIHITI PROVIDENCE", annee: 2018, option: "Pédagogie Générale", pourcentage: 60 },

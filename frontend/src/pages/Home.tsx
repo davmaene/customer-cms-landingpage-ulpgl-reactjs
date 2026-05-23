@@ -18,6 +18,7 @@ import Table from 'antd/es/table';
 import { Colors } from '../utils/utils.colors';
 import { Paymenentinfos } from '../components/subcomponents/Paymenentinfos';
 import { FaCircleInfo } from "react-icons/fa6";
+import { routes } from '../utils/utils.routes';
 
 const Info = FaCircleInfo as any
 
@@ -157,7 +158,7 @@ export const Home: React.FC = () => {
       <FeesSection />
       <StudentsSection />
       {/* Explore domaines */}
-      <DomainesSection />
+      {/* <DomainesSection /> */}
       {/* <OpportunitiesSection /> */}
       {/* <LatestNewsSection /> */}
       {/* <StudyLinksSection /> */}
@@ -247,7 +248,7 @@ const FeesSection: React.FC = () => {
             pagination={false}
             bordered
             size="small"
-            scroll={{ x: 1400 }} // Fixer une valeur numérique ici force l'activation stricte du mode responsive interne
+            scroll={{ x: 1400 }}
             components={{
               header: {
                 cell: (props: any) => (
@@ -385,7 +386,7 @@ const StudentsSection: React.FC = () => {
                         <Link
                           key={index}
                           className="wp-block-button__link wp-element-button"
-                          to={activity.link}
+                          to={routes.ARTICLES}
                         >
                           {activity.name}
                         </Link>

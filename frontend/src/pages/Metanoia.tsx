@@ -9,10 +9,80 @@ import { Hrseparator } from "../components/subcomponents/Hrseparator";
 import { BreadcrumpComponent } from "../components/subcomponents/BreadcrumpCompont";
 import hero from "../assets/images/hero-image.png";
 import { APPOWNER } from "../utils/utils.constants";
+import Table, { ColumnsType } from "antd/es/table";
+import { Tag } from "antd";
+import { laureatsData } from "../utils/utils.statiquedata";
+import { Colors } from "../utils/utils.colors";
+
+const columns: ColumnsType<Laureat> = [
+    {
+        title: 'Numéro',
+        dataIndex: 'numero',
+        key: 'numero',
+        sorter: (a, b) => a.numero - b.numero,
+        width: 100,
+        fixed: "left"
+    },
+    {
+        title: 'Nom Complet',
+        dataIndex: 'nom',
+        key: 'nom',
+        fixed: "left",
+        width: 200,
+        sorter: (a, b) => a.nom.localeCompare(b.nom),
+    },
+    {
+        title: 'Pourcentage',
+        dataIndex: 'pourcentage',
+        key: 'pourcentage',
+        sorter: (a, b) => a.pourcentage - b.pourcentage,
+        className: "bg-primary",
+        render: (pourcentage) => {
+            // let color = 'green';
+            // if (pourcentage >= 70) color = 'gold';
+            // if (pourcentage < 55) color = 'orange';
+            return <b style={{ color: Colors.whiteColor }}>{pourcentage}%</b>;
+        },
+        width: 130,
+    },
+    {
+        title: 'Année',
+        dataIndex: 'annee',
+        key: 'annee',
+        filters: [
+            ...Object.keys(laureatsData.laureats).map(annee => ({ text: annee, value: annee }))
+        ],
+        onFilter: (value, record) => record?.annee?.toString() === value?.toString(),
+        // render: (annee) => (
+        //     <Tag color={annee === 2020 ? 'blue' : 'geekblue'}>{annee}</Tag>
+        // ),
+        width: 120,
+    },
+    {
+        title: 'Option / Section',
+        dataIndex: 'option',
+        key: 'option',
+        filters: [
+            { text: 'Bio-Chimie', value: 'Bio-Chimie' },
+            { text: 'Pédagogie Générale', value: 'Pédagogie Générale' },
+            { text: 'Latin-Philo', value: 'Latin-Philo' },
+            { text: 'Commerciale et gestion', value: 'Commerciale et gestion' },
+            { text: 'Commerciale et Administrative', value: 'Commerciale et Administrative' },
+        ],
+        onFilter: (value, record) => record.option === value,
+    },
+];
 
 export const Metanoia = () => {
-    const { center } = useParams<{ center: string }>();
-    const [item, setItem] = useState<Center | null>(null);
+    const [searchText, setsearchText] = useState<string>("");
+
+    const allLaureats: Laureat[] = [
+        ...Object.values(laureatsData.laureats).flat()
+    ]
+
+    const filteredData = allLaureats.filter((item) =>
+        item.nom.toLowerCase().includes(searchText.toLowerCase())
+    );
 
     return (
         <>
@@ -111,16 +181,48 @@ export const Metanoia = () => {
                             La première promotion a présenté les examens d’État en <b>2006</b> avec
                             <b>33 candidats</b>, parmi lesquels <b>32 ont obtenu leur diplôme d’État</b>.
                         </p>
+                        {/* Diplome liste */}
+                        <h2 className="h4 fw-bold mb-3">Dilplômes</h2>
+                        <p>Voici la liste de nos laureats depuis la creation de l'institut Metanoia</p>
+                        <Table
+                            columns={columns}
+                            dataSource={filteredData}
+                            rowKey="numero"
+                            size="small"
+                            scroll={{ x: 1400 }}
+                            pagination={{
+                                pageSize: 10,
+                                showSizeChanger: true,
+                                pageSizeOptions: ['10', '20', '50'],
+                                position: ['bottomCenter'],
+                            }}
+                            components={{
+                                header: {
+                                    cell: (props: any) => (
+                                        <th
+                                            {...props}
+                                            style={{
+                                                ...props.style,
+                                                background: Colors.primaryColor,
+                                                color: Colors.whiteColor
+                                            }}
+                                        />
+                                    )
+                                }
+                            }}
+                            bordered
+                            style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden' }}
+                        />
                         {/* Direction */}
                         <hr className="my-4" style={{ opacity: 0.1 }} />
                         <h2 className="h4 fw-bold mb-3">Direction</h2>
-                        <h6>---</h6>
+                        <h6>KAKULE KIWIWI</h6>
 
                         {/* Contacts */}
                         <hr className="my-4" style={{ opacity: 0.1 }} />
                         <h2 className="h4 fw-bold mb-3">Contacts</h2>
                         <ul>
-                            <li><ContactLink value={"---"} /></li>
+                            <li><ContactLink value={"0999438625"} /></li>
                         </ul>
                     </article>
                 </main>

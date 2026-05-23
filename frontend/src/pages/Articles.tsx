@@ -85,7 +85,7 @@ export const Articles: React.FC = () => {
             data-testid="articles-filter-faculty"
             value={facultyId}
             onChange={(e) => setFacultyId(e.target.value)}
-            style={{ flex: 1, maxWidth: 360, padding: "8px 12px", border: "1px solid #ddd", borderRadius: 6, background: "white" }}
+            style={{ flex: 1, maxWidth: 360, padding: "8px 12px", border: "1px solid #ddd", borderRadius: 6, background: "white", color: Colors.darkColor }}
           >
             <option value="all">Toutes les facultés</option>
             {faculties.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}

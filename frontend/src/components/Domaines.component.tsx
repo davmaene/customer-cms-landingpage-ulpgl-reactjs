@@ -1,3 +1,4 @@
+import { routes } from "../utils/utils.routes";
 import { domainsData } from "../utils/utils.statiquedata";
 import { DomaineItem } from "./subcomponents/DomaineItemComponent";
 
@@ -35,13 +36,17 @@ export const DomainesSection: React.FC = () => {
 
       <div
         className="explore-grid"
-        // style={{ borderRadius: '0px', display: "grid", gridTemplateColumns: 'repeat(2, 1fr)', gap: "20px" }}
+      // style={{ borderRadius: '0px', display: "grid", gridTemplateColumns: 'repeat(2, 1fr)', gap: "20px" }}
       >
         {domainsData.map((domain, index) => (
-          <DomaineItem key={index} icon={educationIcon} title={domain.domaine} links={Array.from(domain.faculties.map(f => ({ text: f.faculte, href: f.href })))} />
+          <DomaineItem
+            key={index}
+            icon={educationIcon}
+            title={domain.domaine}
+            links={Array.from(domain.faculties.map(f => ({ text: f.faculte, href: String(routes.FACULTIES).concat(f.href) })))}
+          />
         ))}
       </div>
-
       <div className="wp-block-group alignfull has-global-padding is-layout-constrained wp-block-group-is-layout-constrained" style={{ marginTop: '0px' }}>
         <div style={{ marginTop: 0, marginBottom: 0, height: '120px' }} aria-hidden="true" className="wp-block-spacer"></div>
       </div>

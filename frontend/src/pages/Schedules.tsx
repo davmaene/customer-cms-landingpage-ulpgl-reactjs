@@ -20,7 +20,7 @@ export const SchedulesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiGet("/faculties").then((d) => setFaculties(d.rows)).catch(() => {});
+    apiGet("/faculties").then((d) => setFaculties(d.rows)).catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -42,16 +42,16 @@ export const SchedulesPage: React.FC = () => {
       <div className="wp-block-group has-global-padding is-layout-constrained" style={{ paddingTop: 40, paddingBottom: 60 }}>
         {/* Filters */}
         <div data-testid="schedules-filters" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 26, padding: 16, background: "white", borderRadius: 10, boxShadow: "0 2px 10px rgba(0,0,0,0.04)" }}>
-          <select data-testid="filter-type" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })} style={{ flex: 1, minWidth: 180, padding: 10, border: "1px solid #ddd", borderRadius: 6, background: "white" }}>
+          <select data-testid="filter-type" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })} style={{ flex: 1, minWidth: 180, padding: 10, border: "1px solid #ddd", borderRadius: 6, background: "white", color: Colors.darkColor }}>
             <option value="">Tous les types</option>
             <option value="cours">Cours</option>
             <option value="examen">Examens</option>
           </select>
-          <select data-testid="filter-faculty" value={filters.facultyId} onChange={(e) => setFilters({ ...filters, facultyId: e.target.value })} style={{ flex: 1, minWidth: 220, padding: 10, border: "1px solid #ddd", borderRadius: 6, background: "white" }}>
+          <select data-testid="filter-faculty" value={filters.facultyId} onChange={(e) => setFilters({ ...filters, facultyId: e.target.value })} style={{ flex: 1, minWidth: 220, padding: 10, border: "1px solid #ddd", borderRadius: 6, background: "white", color: Colors.darkColor }}>
             <option value="">Toutes les facultés</option>
             {faculties.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
           </select>
-          <select data-testid="filter-promotion" value={filters.promotion} onChange={(e) => setFilters({ ...filters, promotion: e.target.value })} style={{ flex: 1, minWidth: 140, padding: 10, border: "1px solid #ddd", borderRadius: 6, background: "white" }}>
+          <select data-testid="filter-promotion" value={filters.promotion} onChange={(e) => setFilters({ ...filters, promotion: e.target.value })} style={{ flex: 1, minWidth: 140, padding: 10, border: "1px solid #ddd", borderRadius: 6, background: "white", color: Colors.darkColor }}>
             <option value="">Toutes promotions</option>
             {PROMOTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>

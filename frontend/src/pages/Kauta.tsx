@@ -126,12 +126,12 @@ export const Kauta = () => {
 
                         <hr className="my-4" style={{ opacity: 0.1 }} />
                         <h2 className="h4 fw-bold mb-3">Direction</h2>
-                        <h6>---</h6>
+                        <h6>MIHANDA Esther</h6>
 
                         <hr className="my-4" style={{ opacity: 0.1 }} />
                         <h2 className="h4 fw-bold mb-3">Contacts</h2>
                         <ul>
-                            <li><ContactLink value={"---"} /></li>
+                            <li><ContactLink value={"0853125385"} /></li>
                         </ul>
                     </article>
                 </main>

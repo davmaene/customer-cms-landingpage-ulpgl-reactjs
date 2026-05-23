@@ -29,15 +29,15 @@ export const About: React.FC = () => {
                         background: 'linear-gradient(0deg, var(--wp--preset--color--primary) 81%, #fff 81%)',
                     }}
                 >
-                    <div className="wp-block-columns">
+                    <div className="wp-block-columns bg-danger">
                         <div className="wp-block-column">
-                            <figure className="wp-block-image alignwide size-large is-style-rounded desktop-only">
+                            {/* <figure className="wp-block-image alignwide size-large is-style-rounded desktop-only">
                                 <img
                                     src={bigCover}
                                     alt="University campus"
                                     style={{ borderRadius: '10px' }}
                                 />
-                            </figure>
+                            </figure> */}
 
                             <div className="wp-block-spacer-mobile" style={{ height: '10px' }} aria-hidden="true" />
 
