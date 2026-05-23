@@ -16,21 +16,19 @@ api.interceptors.request.use((config: any) => {
 
 api.interceptors.response.use(
   (res: any) => {
-    // Unwrap server envelope { status, messageText, data }
     const body = res.data;
     if (body && typeof body === "object" && "status" in body && "data" in body) {
       res._envelope = { status: body.status, messageText: body.messageText };
       res.data = body.data;
     }
+    console.log(res._envelope, res.data)
     return res;
   },
   (err: any) => {
-    // Server now returns { status, messageText, data } for errors too
     if (err?.response?.data && typeof err.response.data === "object" && "status" in err.response.data) {
       const env = err.response.data;
       err._envelope = { status: env.status, messageText: env.messageText };
       err.response.data = env.data || {};
-      // Attach the messageText for easy display
       err.messageText = env.messageText;
     }
     if (err?.response?.status === 401) {
@@ -41,17 +39,7 @@ api.interceptors.response.use(
   }
 );
 
-// All helpers return the unwrapped `data` object directly.
-// Convention :
-//   - Liste     : { length, rows }
-//   - Détail    : { item }
-//   - Auth      : { token, user }
-//   - Stats     : { total, pending, ... }
-export const apiGet = (url: string, params?: any): Promise<any> =>
-  api.get(url, { params }).then((r: any) => r.data);
-export const apiPost = (url: string, body: any): Promise<any> =>
-  api.post(url, body).then((r: any) => r.data);
-export const apiPut = (url: string, body: any): Promise<any> =>
-  api.put(url, body).then((r: any) => r.data);
-export const apiDel = (url: string): Promise<any> =>
-  api.delete(url).then((r: any) => r.data);
+export const apiGet = (url: string, params?: any): Promise<any> => api.get(url, { params }).then((r: any) => r.data);
+export const apiPost = (url: string, body: any): Promise<any> => api.post(url, body).then((r: any) => r.data);
+export const apiPut = (url: string, body: any): Promise<any> => api.put(url, body).then((r: any) => r.data);
+export const apiDel = (url: string): Promise<any> => api.delete(url).then((r: any) => r.data);

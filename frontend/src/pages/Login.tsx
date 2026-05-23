@@ -7,30 +7,22 @@ import { routes } from "../utils/utils.routes";
 import { Logo } from "../components/subcomponents/Logo";
 import { toast } from "react-toastify";
 
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
+const LoginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email("Adresse email invalide")
+    .required("L'adresse email est requise"),
+  password: Yup.string()
+    .min(6, "Le mot de passe doit contenir au moins 6 caractères")
+    .required("Le mot de passe est requis"),
+});
+
 export const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await login(email, password);
-      toast.success("Connexion réussie");
-      navigate(routes.ADMIN);
-    } catch (err: any) {
-      const msg = err?.response?.data?.reason || err?.messageText || "Identifiants invalides";
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [apiError, setApiError] = useState("");
 
   return (
     <div
@@ -72,96 +64,156 @@ export const Login: React.FC = () => {
           {APPNAME} — Tableau de bord de publication
         </p>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: "block", marginBottom: 6, color: "#333", fontWeight: 500, fontSize: 14 }}>
-              Adresse email
-            </label>
-            <input
-              data-testid="login-email-input"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="vous@ulpgl.net"
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                border: "1px solid #d6d6d6",
-                borderRadius: 6,
-                fontSize: 15,
-                outline: "none",
-              }}
-            />
-          </div>
+        <Formik
+          initialValues={{ email: "", password: "" }}
+          validationSchema={LoginSchema}
+          onSubmit={async (values, { setSubmitting }) => {
+            setApiError("");
+            try {
+              const res = await login(values.email, values.password);
+              console.log(res)
+              navigate(routes.ADMIN);
+            } catch (err: any) {
+              const msg =
+                err?.response?.data?.reason ||
+                err?.messageText ||
+                "Identifiants invalides";
+              setApiError(msg);
+              toast.error(msg);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          {({ errors, touched, isSubmitting }) => (
+            <Form>
+              <div style={{ marginBottom: 14, }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: 6,
+                    color: "#333",
+                    fontWeight: 500,
+                    fontSize: 14,
+                  }}
+                >
+                  Adresse email
+                </label>
+                <Field
+                  data-testid="login-email-input"
+                  name="email"
+                  type="email"
+                  placeholder="vous@ulpgl.net"
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    border: `1px solid ${touched.email && errors.email ? Colors.redColor : "#d6d6d6"}`,
+                    borderRadius: 6,
+                    fontSize: 15,
+                    outline: "none",
+                  }}
+                />
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="text-dang"
+                />
+              </div>
 
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ display: "block", marginBottom: 6, color: "#333", fontWeight: 500, fontSize: 14 }}>
-              Mot de passe
-            </label>
-            <input
-              data-testid="login-password-input"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                border: "1px solid #d6d6d6",
-                borderRadius: 6,
-                fontSize: 15,
-                outline: "none",
-              }}
-            />
-          </div>
+              {/* Champ Mot de passe */}
+              <div style={{ marginBottom: 18 }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: 6,
+                    color: "#333",
+                    fontWeight: 500,
+                    fontSize: 14,
+                  }}
+                >
+                  Mot de passe
+                </label>
+                <Field
+                  data-testid="login-password-input"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    border: `1px solid ${touched.password && errors.password ? Colors.redColor : "#d6d6d6"}`,
+                    borderRadius: 6,
+                    fontSize: 15,
+                    outline: "none",
+                  }}
+                />
+                <ErrorMessage
+                  name="password"
+                  component="div"
+                  className="text-dang"
+                />
+              </div>
 
-          {error && (
-            <div
-              data-testid="login-error"
-              style={{
-                background: "#fde2e2",
-                color: "#a31515",
-                padding: "10px 14px",
-                borderRadius: 6,
-                marginBottom: 16,
-                fontSize: 14,
-              }}
-            >
-              {error}
-            </div>
+              {/* Erreur de l'API (Retour serveur) */}
+              {apiError && (
+                <div
+                  data-testid="login-error"
+                  style={{
+                    background: "#fde2e2",
+                    color: "#a31515",
+                    padding: "10px 14px",
+                    borderRadius: 6,
+                    marginBottom: 16,
+                    fontSize: 14,
+                  }}
+                >
+                  {apiError}
+                </div>
+              )}
+
+              {/* Bouton de soumission */}
+              <button
+                data-testid="login-submit-button"
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  width: "100%",
+                  padding: "13px",
+                  background: Colors.primaryColor,
+                  color: "white",
+                  border: "none",
+                  borderRadius: 6,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  cursor: isSubmitting ? "not-allowed" : "pointer",
+                  opacity: isSubmitting ? 0.7 : 1,
+                }}
+              >
+                {isSubmitting ? "Connexion..." : "Se connecter"}
+              </button>
+
+              <div style={{ marginTop: 14, textAlign: "right" }}>
+                <Link
+                  to={routes.FORGOT_PASSWORD}
+                  data-testid="forgot-password-link"
+                  style={{
+                    color: Colors.primaryColor,
+                    textDecoration: "none",
+                    fontSize: 13,
+                  }}
+                >
+                  Mot de passe oublié ?
+                </Link>
+              </div>
+            </Form>
           )}
-
-          <button
-            data-testid="login-submit-button"
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "13px",
-              background: Colors.primaryColor,
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              fontSize: 16,
-              fontWeight: 600,
-              cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.7 : 1,
-            }}
-          >
-            {loading ? "Connexion..." : "Se connecter"}
-          </button>
-
-          <div style={{ marginTop: 14, textAlign: "right" }}>
-            <Link to={routes.FORGOT_PASSWORD} data-testid="forgot-password-link" style={{ color: Colors.primaryColor, textDecoration: "none", fontSize: 13 }}>
-              Mot de passe oublié ?
-            </Link>
-          </div>
-        </form>
+        </Formik>
 
         <div style={{ marginTop: 22, textAlign: "center" }}>
-          <Link to={routes.HOME} style={{ color: Colors.primaryColor, textDecoration: "none", fontSize: 14 }}>
+          <Link
+            to={routes.HOME}
+            style={{ color: Colors.primaryColor, textDecoration: "none", fontSize: 14 }}
+          >
             ← Retour au site
           </Link>
         </div>
